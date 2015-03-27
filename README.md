@@ -1,2 +1,2 @@
 # cg-project
-Game in OpenGL to the Computer Graphics course.
+Game in OpenGL for the Computer Graphics course.
