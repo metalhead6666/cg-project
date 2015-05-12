@@ -5,8 +5,7 @@ int main(int argc, char **argv){
 
     stage.start_stage();
 
-    glutDisplayFunc(display);
-    glutKeyboardFunc(key_pressed);
+    glutDisplayFunc(display);    glutKeyboardFunc(key_pressed);
     glutKeyboardUpFunc(key_not_pressed);
     glutSpecialFunc(special_key_pressed);
     glutSpecialUpFunc(special_key_not_pressed);
