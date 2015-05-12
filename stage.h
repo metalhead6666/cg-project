@@ -18,9 +18,6 @@
 #define WHITE			 1.0, 1.0, 1.0, 1.0
 #define BLACK			 0.0, 0.0, 0.0, 1.0
 
-#define WSCREEN 1280
-#define HSCREEN 720
-
 #define PI 3.141529
 
 struct observer{
@@ -43,10 +40,12 @@ public:
     GLvoid click_mouse(GLint button, GLint state);
 
 private:
-    struct observer obs_begin;
-    struct observer obs_end;
+    GLsizei wScreen, hScreen;
     GLdouble a_vision, r_vision, inc_vision;
     GLdouble fov, aspect, near, far;
+    GLdouble width, height, length;
+    struct observer obs_begin;
+    struct observer obs_end;
 };
 
 #endif // STAGE_H
