@@ -4,9 +4,9 @@ Stage::Stage(){
     this->wScreen = 1280;
     this->hScreen = 720;
 
-    this->width = 1.0;
-    this->height = 1.0;
-    this->length = 1.0;
+    this->width = 2.0;
+    this->height = 2.0;
+    this->length = 10.0;
 
     this->fov = 70.0;
     this->aspect = (GLdouble)this->wScreen / (GLdouble)this->hScreen;
@@ -24,6 +24,11 @@ Stage::Stage(){
     this->obs_end.x = this->obs_begin.x;
     this->obs_end.y = this->obs_begin.y;
     this->obs_end.z = -5.0;
+
+    this->front = false;
+    this->back = false;
+    this->left = false;
+    this->right = false;
 }
 
 Stage::~Stage(){
@@ -61,6 +66,7 @@ GLvoid Stage::display(){
     gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 1.0, 0.0);
 
     this->draw_world();
+    this->keyboard();
 
     glutSwapBuffers();
 }
@@ -68,7 +74,7 @@ GLvoid Stage::display(){
 GLvoid Stage::draw_world(){
     glPushMatrix();
         glColor4d(WHITE);
-        glTranslated(0.0, 0.0, -5.0);
+        glTranslated(0.0, -0.7, 1.0);
         //glScaled(2.0, 2.0, 2.0);
 
         glCullFace(GL_FRONT);
@@ -84,6 +90,7 @@ GLvoid Stage::draw_world(){
 
         glCullFace(GL_BACK);
         glPushMatrix();
+            glColor4d(BLUE);
             glBegin(GL_QUADS);
                 //Up
                 glVertex3d(-width, height, -length);
@@ -95,6 +102,7 @@ GLvoid Stage::draw_world(){
 
         glCullFace(GL_FRONT);
         glPushMatrix();
+            glColor4d(YELLOW);
             glBegin(GL_QUADS);
                 //Left
                 glVertex3d(-width, 0.0, -length);
@@ -106,6 +114,7 @@ GLvoid Stage::draw_world(){
 
         glCullFace(GL_BACK);
         glPushMatrix();
+            glColor4d(GREEN);
             glBegin(GL_QUADS);
                 //Right
                 glVertex3d(width, 0.0, -length);
@@ -116,6 +125,7 @@ GLvoid Stage::draw_world(){
         glPopMatrix();
 
         glPushMatrix();
+            glColor4d(ORANGE);
             glBegin(GL_QUADS);
                 //Front
                 glVertex3d(-width, 0.0, 1.0);
@@ -127,6 +137,7 @@ GLvoid Stage::draw_world(){
 
         glCullFace(GL_FRONT);
         glPushMatrix();
+            glColor4d(RED);
             glBegin(GL_QUADS);
                 //Back
                 glVertex3d(-width, 0.0, -length);
@@ -138,8 +149,28 @@ GLvoid Stage::draw_world(){
     glPopMatrix();
 }
 
+GLvoid Stage::keyboard(){
+
+}
+
 GLvoid Stage::key_pressed(unsigned char key){
     switch(key){
+    case 'w':
+        this->front = true;
+        break;
+
+    case 's':
+        this->back = true;
+        break;
+
+    case 'a':
+        this->left = true;
+        break;
+
+    case 'd':
+        this->right = true;
+        break;
+
     case 27:
         exit(0);
 
@@ -150,6 +181,22 @@ GLvoid Stage::key_pressed(unsigned char key){
 
 GLvoid Stage::key_not_pressed(unsigned char key){
     switch(key){
+    case 'w':
+        this->front = false;
+        break;
+
+    case 's':
+        this->back = false;
+        break;
+
+    case 'a':
+        this->left = false;
+        break;
+
+    case 'd':
+        this->right = false;
+        break;
+
     default:
         break;
     }
@@ -167,14 +214,4 @@ GLvoid Stage::special_key_not_pressed(GLint key){
     default:
         break;
     }
-}
-
-GLvoid Stage::mouse_motion(GLint x, GLint y){
-    (void)x;
-    (void)y;
-}
-
-GLvoid Stage::click_mouse(GLint button, GLint state){
-    (void)button;
-    (void)state;
 }

@@ -32,20 +32,22 @@ public:
     GLvoid start_stage();
     GLvoid display();
     GLvoid draw_world();
+    GLvoid keyboard();
     GLvoid key_pressed(unsigned char key);
     GLvoid key_not_pressed(unsigned char key);
     GLvoid special_key_pressed(GLint key);
     GLvoid special_key_not_pressed(GLint key);
-    GLvoid mouse_motion(GLint x, GLint y);
-    GLvoid click_mouse(GLint button, GLint state);
 
 private:
     GLsizei wScreen, hScreen;
+
     GLdouble a_vision, r_vision, inc_vision;
     GLdouble fov, aspect, near, far;
     GLdouble width, height, length;
     struct observer obs_begin;
     struct observer obs_end;
+
+    GLboolean front, back, left, right;
 };
 
 #endif // STAGE_H
