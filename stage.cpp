@@ -150,7 +150,27 @@ GLvoid Stage::draw_world(){
 }
 
 GLvoid Stage::keyboard(){
+    if(this->front){
+        this->obs_begin.z -= 0.1;
+        this->obs_end.z -= 0.1;
+    }
 
+    if(this->back){
+        this->obs_begin.z += 0.1;
+        this->obs_end.z += 0.1;
+    }
+
+    if(this->left){
+        this->obs_begin.x -= 0.01;
+        this->obs_end.x -= 0.01;
+    }
+
+    if(this->right){
+        this->obs_begin.x += 0.01;
+        this->obs_end.x += 0.01;
+    }
+
+    glutPostRedisplay();
 }
 
 GLvoid Stage::key_pressed(unsigned char key){
