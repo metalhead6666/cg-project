@@ -6,6 +6,7 @@
 #else
     #include <GL/glut.h>
 #endif
+#include <iostream>
 #include <cmath>
 
 /* colors */
@@ -18,7 +19,11 @@
 #define WHITE			 1.0, 1.0, 1.0, 1.0
 #define BLACK			 0.0, 0.0, 0.0, 1.0
 
+/* math values */
 #define PI 3.141529
+
+/* debug defines */
+#define DEBUG_CAMERA_ROTATION
 
 struct observer{
     GLdouble x, y, z;
@@ -26,28 +31,35 @@ struct observer{
 
 class Stage{
 public:
+    /* constructor */
     Stage();
+    /* destructor */
     ~Stage();
 
+    /* functions */
     GLvoid start_stage();
     GLvoid display();
-    GLvoid draw_world();
-    GLvoid keyboard();
     GLvoid key_pressed(unsigned char key);
     GLvoid key_not_pressed(unsigned char key);
     GLvoid special_key_pressed(GLint key);
     GLvoid special_key_not_pressed(GLint key);
 
 private:
+    /* functions */
+    GLvoid draw_world();
+    GLvoid draw_character();
+    GLvoid keyboard();
+
+    /* variables */
     GLsizei wScreen, hScreen;
 
-    GLdouble a_vision, r_vision, inc_vision;
+    GLdouble angle, radium;
     GLdouble fov, aspect, near, far;
     GLdouble width, height, length;
     struct observer obs_begin;
     struct observer obs_end;
 
-    GLboolean front, back, left, right;
+    GLboolean front, back, left, right, left_camera, right_camera;
 };
 
 #endif // STAGE_H

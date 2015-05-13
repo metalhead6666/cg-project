@@ -8,14 +8,13 @@ Stage::Stage(){
     this->height = 2.0;
     this->length = 10.0;
 
+    this->angle = 0.0;
+    this->radium = 5.0;
+
     this->fov = 70.0;
     this->aspect = (GLdouble)this->wScreen / (GLdouble)this->hScreen;
     this->near = 1.0;
     this->far = 1000.0;
-
-    this->r_vision = 3.0;
-    this->a_vision = 0.5 * PI;
-    this->inc_vision = 0.04;
 
     this->obs_begin.x = 0.0;
     this->obs_begin.y = 0.0;
@@ -39,7 +38,7 @@ GLvoid Stage::start_stage(){
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(this->wScreen, this->hScreen);
     glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - this->wScreen) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - this->hScreen) / 2);
-    glutCreateWindow("Crappy name ");
+    glutCreateWindow("Crappy name "); /* TODO: change this name */
 
     glClearColor(BLACK);
 
@@ -54,6 +53,7 @@ GLvoid Stage::display(){
 
     this->wScreen = glutGet(GLUT_WINDOW_WIDTH);
     this->hScreen = glutGet(GLUT_WINDOW_HEIGHT);
+    this->aspect = (GLdouble)this->wScreen / (GLdouble)this->hScreen;
 
     glViewport(0, 0, this->wScreen, this->hScreen);
 
@@ -66,6 +66,7 @@ GLvoid Stage::display(){
     gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 1.0, 0.0);
 
     this->draw_world();
+    this->draw_character();
     this->keyboard();
 
     glutSwapBuffers();
@@ -75,7 +76,6 @@ GLvoid Stage::draw_world(){
     glPushMatrix();
         glColor4d(WHITE);
         glTranslated(0.0, -0.7, 1.0);
-        //glScaled(2.0, 2.0, 2.0);
 
         glCullFace(GL_FRONT);
         glPushMatrix();
@@ -149,25 +149,87 @@ GLvoid Stage::draw_world(){
     glPopMatrix();
 }
 
+GLvoid Stage::draw_character(){
+    glPushMatrix();
+        glColor4d(BLACK);
+        glRotated(this->radium * cos(this->angle), 0.0, 0.0, 1.0);
+        glTranslated(0.0, -0.5, -1.5);
+        glutSolidSphere(0.15, 25, 25);
+    glPopMatrix();
+}
+
 GLvoid Stage::keyboard(){
     if(this->front){
-        this->obs_begin.z -= 0.1;
-        this->obs_end.z -= 0.1;
+        if(this->obs_end.z < 0.0){
+            this->obs_begin.z -= 0.1;
+            this->obs_end.z -= 0.1;
+        }
+
+        else{
+            this->obs_begin.z += 0.1;
+            this->obs_end.z += 0.1;
+        }
     }
 
     if(this->back){
-        this->obs_begin.z += 0.1;
-        this->obs_end.z += 0.1;
+        if(this->obs_end.z < 0.0){
+            this->obs_begin.z += 0.1;
+            this->obs_end.z += 0.1;
+        }
+
+        else{
+            this->obs_begin.z -= 0.1;
+            this->obs_end.z -= 0.1;
+        }
     }
 
     if(this->left){
-        this->obs_begin.x -= 0.01;
-        this->obs_end.x -= 0.01;
+        if(this->obs_end.x < 0.0){
+            this->obs_begin.x -= 0.03;
+            this->obs_end.x -= 0.03;
+        }
+
+        else{
+            this->obs_begin.x += 0.03;
+            this->obs_end.x += 0.03;
+        }
     }
 
     if(this->right){
-        this->obs_begin.x += 0.01;
-        this->obs_end.x += 0.01;
+        if(this->obs_end.x < 0.0){
+            this->obs_begin.x += 0.03;
+            this->obs_end.x += 0.03;
+        }
+
+        else{
+            this->obs_begin.x -= 0.03;
+            this->obs_end.x -= 0.03;
+        }
+    }
+
+    if(this->left_camera){
+        this->angle -= 0.03;
+        this->obs_end.x = this->radium * cos(this->angle);
+        this->obs_end.z = this->radium * sin(this->angle);
+
+#ifdef DEBUG_CAMERA_ROTATION
+        std::cout << "LEFT: \n";
+        std::cout << "OBS END - X: " << this->obs_end.x;
+        std::cout << "\nOBS END - Z: " << this->obs_end.z << "\n\n";
+#endif
+
+    }
+
+    if(this->right_camera){
+        this->angle += 0.03;
+        this->obs_end.x = this->radium * cos(this->angle);
+        this->obs_end.z = this->radium * sin(this->angle);
+
+#ifdef DEBUG_CAMERA_ROTATION
+        std::cout << "RIGHT: \n";
+        std::cout << "OBS END - X: " << this->obs_end.x;
+        std::cout << "\nOBS END - Z: " << this->obs_end.z << "\n\n";
+#endif
     }
 
     glutPostRedisplay();
@@ -224,6 +286,14 @@ GLvoid Stage::key_not_pressed(unsigned char key){
 
 GLvoid Stage::special_key_pressed(GLint key){
     switch(key){
+    case GLUT_KEY_LEFT:
+        this->left_camera = true;
+        break;
+
+    case GLUT_KEY_RIGHT:
+        this->right_camera = true;
+        break;
+
     default:
         break;
     }
@@ -231,6 +301,14 @@ GLvoid Stage::special_key_pressed(GLint key){
 
 GLvoid Stage::special_key_not_pressed(GLint key){
     switch(key){
+    case GLUT_KEY_LEFT:
+        this->left_camera = false;
+        break;
+
+    case GLUT_KEY_RIGHT:
+        this->right_camera = false;
+        break;
+
     default:
         break;
     }
