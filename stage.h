@@ -2,7 +2,6 @@
 #define STAGE_H
 
 #ifdef __APPLE__
-    #include <OpenGL/OpenGL.h>
     #include <GLUT/glut.h>
 #else
     #include <GL/glut.h>
@@ -11,6 +10,11 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+
+//#define DEBUG_MODELVIEW
+#define DEBUG_SPHERE
+//#define DEBUG_PLAYER_LEFT
+//#define DEBUG_PLAYER_RIGHT
 
 /* colors */
 #define BLUE			 0.0, 0.0, 1.0, 1.0
@@ -25,9 +29,6 @@
 
 /* math values */
 #define PI 3.141529
-
-/* debug defines */
-#define DEBUG_CAMERA_ROTATION
 
 struct observer{
     GLdouble x, y, z;
@@ -49,8 +50,6 @@ public:
     GLvoid special_key_not_pressed(GLint key);
     GLvoid Timer_ball_going_down(GLint value);
     static void static_timer_ball_going_down(GLint value);
-    //GLvoid timer(int value);
-    GLboolean getObserverPosition();
 
 private:
     /* functions */
@@ -59,6 +58,7 @@ private:
     GLvoid keyboard();
     GLvoid draw_board();
     GLvoid writeText(char *text);
+    GLvoid writePoints();
 
     /* variables */
     GLsizei wScreen, hScreen;
@@ -77,6 +77,9 @@ private:
     GLboolean observer_position;
     struct observer obs_begin;
     struct observer obs_end;
+
+    GLint timer_value;
+    GLint player_one_points, player_two_points;
 
     GLboolean front, back, left, right, up_arrow, down_arrow;    
 };

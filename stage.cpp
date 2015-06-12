@@ -20,6 +20,7 @@ Stage::Stage(){
     this->left_racket_move = 0.0;
     this->right_racket_move = 0.0;
     this->ball_going_down = 1.75;
+    /* mexer aqui caralho */
     this->observer_position = true;
     
     this->ball_pos_x = 0.0;
@@ -48,6 +49,11 @@ Stage::Stage(){
     this->left = false;
     this->right = false;
 
+    /* mexer aqui caralho, 3 ou -1 */
+    this->timer_value = 3;
+    this->player_one_points = 0;
+    this->player_two_points = 0;
+
     s_stage = this;
 }
 
@@ -70,6 +76,8 @@ GLvoid Stage::start_stage(){
 }
 
 GLvoid Stage::display(){
+    char *aux;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     this->wScreen = glutGet(GLUT_WINDOW_WIDTH);
@@ -77,6 +85,17 @@ GLvoid Stage::display(){
     this->aspect = (GLdouble)this->wScreen / (GLdouble)this->hScreen;
 
     glViewport(0, 0, this->wScreen, this->hScreen);
+
+    if(timer_value == -1){
+        writePoints();
+    }
+
+    else{
+        aux = (char *)calloc(1, sizeof(char) * 2);
+        sprintf(aux, "%d", timer_value);
+        writeText(aux);
+        free(aux);
+    }
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -104,8 +123,6 @@ GLvoid Stage::display(){
 GLvoid Stage::draw_world(){
     glPushMatrix();
         glColor4d(WHITE);
-        //glTranslated(0.0, -0.7, 1.0);
-
         glCullFace(GL_FRONT);
         glPushMatrix();
             glBegin(GL_QUADS);
@@ -181,8 +198,6 @@ GLvoid Stage::draw_world(){
 GLvoid Stage::draw_board(){
     glPushMatrix();
         glColor4d(BLUE);
-        //glTranslated(0.0, -0.7, 1.0);
-    
         glCullFace(GL_FRONT);
         glPushMatrix();
             glBegin(GL_QUADS);
@@ -193,7 +208,6 @@ GLvoid Stage::draw_board(){
                 glVertex3d(-board_width, 0.5, board_length);
             glEnd();
         glPopMatrix();
-    
     
         //RIGHT RACKET
         glCullFace(GL_FRONT);
@@ -208,7 +222,9 @@ GLvoid Stage::draw_board(){
                 glEnd();
             glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_player_right[0][0]);
             matrix_player_right[3][0] = 8;
-            //printf("[PLAYER RIGHT] %lf %lf %lf\n",matrix_player_right[3][0],matrix_player_right[3][1],matrix_player_right[3][2]);
+#ifdef DEBUG_PLAYER_RIGHT
+            printf("[PLAYER RIGHT] %lf %lf %lf\n",matrix_player_right[3][0],matrix_player_right[3][1],matrix_player_right[3][2]);
+#endif
         glPopMatrix();
     
         //LEFT RACKET
@@ -224,7 +240,9 @@ GLvoid Stage::draw_board(){
                 glEnd();
             glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_player_left[0][0]);
             matrix_player_left[3][0] = -8;
-            //printf("[PLAYER LEFT] %lf %lf %lf\n",matrix_player_left[3][0],matrix_player_left[3][1],matrix_player_left[3][2]);
+#ifdef DEBUG_PLAYER_LEFT
+            printf("[PLAYER LEFT] %lf %lf %lf\n",matrix_player_left[3][0],matrix_player_left[3][1],matrix_player_left[3][2]);
+#endif
         glPopMatrix();
     
         glPushMatrix();
@@ -257,11 +275,12 @@ GLvoid Stage::draw_board(){
 GLvoid Stage::draw_character(){
     glPushMatrix();
     glColor4d(WHITE);
-    //glRotated(this->radium * cos(this->angle), 0.0, 0.0, 1.0);
     glTranslatef(ball_pos_x, ball_going_down, ball_pos_z);
     glutSolidSphere(0.25, 25, 25);
     glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_ball[0][0]);
+#ifdef DEBUG_SPHERE
     printf("[SPHERE] %lf %lf %lf\n",matrix_ball[3][0],matrix_ball[3][1],matrix_ball[3][2]);
+#endif
     glPopMatrix();
 }
 
@@ -357,42 +376,52 @@ GLvoid Stage::special_key_not_pressed(GLint key){
 }
 
 GLvoid Stage::writeText(char *text){
-    /*const char *c;
+    const char *c;
+
+    glColor4d(PINK);
+    glPushMatrix();
+        glRasterPos2d(2.0, 1.5);
+
+        for(c = text; *c != '\0'; ++c){
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+        }
+    glPopMatrix();
+}
+
+GLvoid Stage::writePoints(){
+    const char *c;
+    char *one, *two;
+
+    one = (char *)calloc(1, sizeof(char) * 22);
+    two = (char *)calloc(1, sizeof(char) * 22);
+    sprintf(one, "Player One Score: %d", this->player_one_points);
+    sprintf(two, "Player Two Score: %d", this->player_two_points);
 
     glColor4d(BLACK);
     glPushMatrix();
-        glTranslated(2.0, 1.5, 0.0);
-        glRasterPos2f(0.0, 0.0);
+        glTranslated(0.0, 0.0, 4.12);
+        glRasterPos2d(8.0, 1.0);
 
-        for(c = text; *c != '\0'; ++c){
+        for(c = one; *c != '\0'; ++c){
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+        }
+
+        glRasterPos2d(-4.55, 1.0);
+
+        for(c = two; *c != '\0'; ++c){
             glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
         }
     glPopMatrix();
-    
-    glMatrixMode(GL_PROJECTION);
-    double *matrix = new double[16];
-    glGetDoublev(GL_PROJECTION_MATRIX, matrix);
-    glLoadIdentity();
-    glOrtho(0,1280,0,720,-1,1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glPushMatrix();
-        glLoadIdentity();
-        glRasterPos2f(0.0,0.0);
-        printf("TEXT: %s\n",text);
-        for(c = text; *c != '\0'; ++c){
-            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
-        }
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(matrix);
-    glMatrixMode(GL_MODELVIEW);*/
-    
+
+    free(one);
+    free(two);
 }
 
 GLvoid Stage::Timer_ball_going_down(GLint value){
-    if (!observer_position){
-        //printf("[DEBUG]%lf %lf\n",matrix_ball[3][0],matrix_player_left[3][0]);
+    if(!observer_position){
+#ifdef DEBUG_MODELVIEW
+        printf("[DEBUG]%lf %lf\n",matrix_ball[3][0],matrix_player_left[3][0]);
+#endif
         if((matrix_ball[3][0]-0.25 <= matrix_player_left[3][0] && ((matrix_ball[3][1]<=matrix_player_left[3][1]+1) && (matrix_ball[3][1]>=matrix_player_left[3][1]-1)))
            || (matrix_ball[3][0]+0.25 >= matrix_player_right[3][0] && ((matrix_ball[3][1]<=matrix_player_right[3][1]+1) && (matrix_ball[3][1]>=matrix_player_right[3][1]-1)))){
             ball_speed_x *= -1.0;
@@ -404,31 +433,28 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
         
         this->ball_pos_x += ball_speed_x;
         this->ball_pos_z += ball_speed_z;
+        glutPostRedisplay();
         glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
     }
     
     else{
-        char *aux;
+        timer_value = value;
 
         if(!value){
-            aux = (char *)calloc(1, sizeof(char) * 4);
-            strcpy(aux, "Go!");
-            writeText(aux);
-            free(aux);
             observer_position = false;
+            timer_value = -1;
+            glutPostRedisplay();
             glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
         }
 
-        if(ball_going_down > 0.75){
+        else if(ball_going_down > 0.75){
             ball_going_down -= 0.01;
+            glutPostRedisplay();
             glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
         }
 
         else{
-            aux = (char *)calloc(1, sizeof(char) * 2);
-            sprintf(aux, "%d", value);
-            writeText(aux);
-            free(aux);
+            glutPostRedisplay();
             glutTimerFunc(1000, &Stage::static_timer_ball_going_down, value - 1);
         }
     }
@@ -436,8 +462,4 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
 
 void Stage::static_timer_ball_going_down(GLint value){
     s_stage->Timer_ball_going_down(value);
-}
-
-GLboolean Stage::getObserverPosition(){
-    return this->observer_position;
 }
