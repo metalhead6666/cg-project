@@ -2,6 +2,7 @@
 #define STAGE_H
 
 #ifdef __APPLE__
+    #include <OpenGL/OpenGL.h>
     #include <GLUT/glut.h>
 #else
     #include <GL/glut.h>
@@ -49,6 +50,7 @@ private:
     GLvoid draw_world();
     GLvoid draw_character();
     GLvoid keyboard();
+    GLvoid draw_board();
 
     /* variables */
     GLsizei wScreen, hScreen;
@@ -56,10 +58,13 @@ private:
     GLdouble angle, radium;
     GLdouble fov, aspect, near, far;
     GLdouble width, height, length;
+    GLdouble board_width, board_length, board_height;
+    GLdouble racket_width, racket_length, racket_height;
+    GLdouble left_racket_move, right_racket_move;
     struct observer obs_begin;
     struct observer obs_end;
 
-    GLboolean front, back, left, right, left_camera, right_camera;
+    GLboolean front, back, left, right, up_arrow, down_arrow;
 };
 
 #endif // STAGE_H

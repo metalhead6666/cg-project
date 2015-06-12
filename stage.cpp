@@ -4,9 +4,19 @@ Stage::Stage(){
     this->wScreen = 1280;
     this->hScreen = 720;
 
-    this->width = 2.0;
+    this->width = 5.0;
     this->height = 2.0;
-    this->length = 10.0;
+    this->length = 5.0;
+    
+    this->board_width = 4.0;
+    this->board_length = 4.0;
+    this->board_height = 1.0;
+    
+    this->racket_width = 0.05;
+    this->racket_length = 1.0;
+    this->racket_height = 0.5;
+    this->left_racket_move=0.0;
+    this->right_racket_move=0.0;
 
     this->angle = 0.0;
     this->radium = 5.0;
@@ -17,12 +27,12 @@ Stage::Stage(){
     this->far = 1000.0;
 
     this->obs_begin.x = 0.0;
-    this->obs_begin.y = 0.0;
-    this->obs_begin.z = 0.0;
+    this->obs_begin.y = 10.0;
+    this->obs_begin.z = 0;
 
     this->obs_end.x = this->obs_begin.x;
-    this->obs_end.y = this->obs_begin.y;
-    this->obs_end.z = -5.0;
+    this->obs_end.y = 0.0;
+    this->obs_end.z = 0;
 
     this->front = false;
     this->back = false;
@@ -63,9 +73,10 @@ GLvoid Stage::display(){
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 1.0, 0.0);
+    gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 0.0, 1.0);
 
     this->draw_world();
+    this->draw_board();
     this->draw_character();
     this->keyboard();
 
@@ -75,7 +86,7 @@ GLvoid Stage::display(){
 GLvoid Stage::draw_world(){
     glPushMatrix();
         glColor4d(WHITE);
-        glTranslated(0.0, -0.7, 1.0);
+        //glTranslated(0.0, -0.7, 1.0);
 
         glCullFace(GL_FRONT);
         glPushMatrix();
@@ -83,8 +94,8 @@ GLvoid Stage::draw_world(){
                 //Bottom
                 glVertex3d(-width, 0.0, -length);
                 glVertex3d(width, 0.0, -length);
-                glVertex3d(width, 0.0, 1.0);
-                glVertex3d(-width, 0.0, 1.0);
+                glVertex3d(width, 0.0, length);
+                glVertex3d(-width, 0.0, length);
             glEnd();
         glPopMatrix();
 
@@ -95,19 +106,19 @@ GLvoid Stage::draw_world(){
                 //Up
                 glVertex3d(-width, height, -length);
                 glVertex3d(width, height, -length);
-                glVertex3d(width, height, 1.0);
-                glVertex3d(-width, height, 1.0);
+                glVertex3d(width, height, length);
+                glVertex3d(-width, height, length);
             glEnd();
         glPopMatrix();
 
         glCullFace(GL_FRONT);
         glPushMatrix();
-            glColor4d(YELLOW);
+            glColor4d(BROWN);
             glBegin(GL_QUADS);
                 //Left
                 glVertex3d(-width, 0.0, -length);
-                glVertex3d(-width, 0.0, 1.0);
-                glVertex3d(-width, height, 1.0);
+                glVertex3d(-width, 0.0, length);
+                glVertex3d(-width, height, length);
                 glVertex3d(-width, height, -length);
             glEnd();
         glPopMatrix();
@@ -118,8 +129,8 @@ GLvoid Stage::draw_world(){
             glBegin(GL_QUADS);
                 //Right
                 glVertex3d(width, 0.0, -length);
-                glVertex3d(width, 0.0, 1.0);
-                glVertex3d(width, height, 1.0);
+                glVertex3d(width, 0.0, length);
+                glVertex3d(width, height, length);
                 glVertex3d(width, height, -length);
             glEnd();
         glPopMatrix();
@@ -128,10 +139,10 @@ GLvoid Stage::draw_world(){
             glColor4d(ORANGE);
             glBegin(GL_QUADS);
                 //Front
-                glVertex3d(-width, 0.0, 1.0);
-                glVertex3d(-width, height, 1.0);
-                glVertex3d(width, height, 1.0);
-                glVertex3d(width, 0.0, 1.0);
+                glVertex3d(-width, 0.0, length);
+                glVertex3d(-width, height, length);
+                glVertex3d(width, height, length);
+                glVertex3d(width, 0.0, length);
             glEnd();
         glPopMatrix();
 
@@ -149,87 +160,112 @@ GLvoid Stage::draw_world(){
     glPopMatrix();
 }
 
+GLvoid Stage::draw_board(){
+    glPushMatrix();
+    glColor4d(BLUE);
+    //glTranslated(0.0, -0.7, 1.0);
+    
+    glCullFace(GL_FRONT);
+    glPushMatrix();
+        glBegin(GL_QUADS);
+        //Bottom
+            glVertex3d(-board_width, 0.5, -board_length);
+            glVertex3d(board_width, 0.5, -board_length);
+            glVertex3d(board_width, 0.5, board_length);
+            glVertex3d(-board_width, 0.5, board_length);
+        glEnd();
+    glPopMatrix();
+    
+    glCullFace(GL_BACK);
+    glPushMatrix();
+        glColor4d(BLUE);
+        glBegin(GL_QUADS);
+        //Up
+            glVertex3d(-board_width, board_height, -board_length);
+            glVertex3d(board_width, board_height, -board_length);
+            glVertex3d(board_width, board_height, board_length);
+            glVertex3d(-board_width, board_height, board_length);
+        glEnd();
+    glPopMatrix();
+    //RACKET
+    glCullFace(GL_FRONT);
+    glPushMatrix();
+        glColor4d(BROWN);
+        glTranslated(0.0, 0.0, right_racket_move);
+        glBegin(GL_QUADS);
+        //Left
+            glVertex3d(-board_width, 0.0, -racket_length);
+            glVertex3d(-board_width, 0.0, racket_length);
+            glVertex3d(-board_width, board_height, racket_length);
+            glVertex3d(-board_width, board_height, -racket_length);
+        glEnd();
+    glPopMatrix();
+    //RACKET
+    glCullFace(GL_BACK);
+    glPushMatrix();
+        glColor4d(GREEN);
+        glTranslated(0.0, 0.0, left_racket_move);
+        glBegin(GL_QUADS);
+        //Right
+            glVertex3d(board_width, 0.0, -racket_length);
+            glVertex3d(board_width, 0.0, racket_length);
+            glVertex3d(board_width, board_height, racket_length);
+            glVertex3d(board_width, board_height, -racket_length);
+        glEnd();
+    glPopMatrix();
+    
+    glPushMatrix();
+        glColor4d(ORANGE);
+        glBegin(GL_QUADS);
+        //Front
+            glVertex3d(-board_width, 0.5, board_length);
+            glVertex3d(-board_width, board_height, board_length);
+            glVertex3d(board_width, board_height, board_length);
+            glVertex3d(board_width, 0.5, board_length);
+        glEnd();
+    glPopMatrix();
+    
+    glCullFace(GL_FRONT);
+    glPushMatrix();
+        glColor4d(RED);
+        glBegin(GL_QUADS);
+        //Back
+            glVertex3d(-board_width, 0.5, -board_length);
+            glVertex3d(-board_width, board_height, -board_length);
+            glVertex3d(board_width, board_height, -board_length);
+            glVertex3d(board_width, 0.5, -board_length);
+        glEnd();
+    glPopMatrix();
+    glPopMatrix();
+}
+
 GLvoid Stage::draw_character(){
     glPushMatrix();
-        glColor4d(BLACK);
-        glRotated(this->radium * cos(this->angle), 0.0, 0.0, 1.0);
-        glTranslated(0.0, -0.5, -1.5);
-        glutSolidSphere(0.15, 25, 25);
+        glColor4d(WHITE);
+        //glRotated(this->radium * cos(this->angle), 0.0, 0.0, 1.0);
+        glTranslated(0.0, 1.0, 0);
+        glutSolidSphere(0.25, 25, 25);
     glPopMatrix();
 }
 
 GLvoid Stage::keyboard(){
     if(this->front){
-        if(this->obs_end.z < 0.0){
-            this->obs_begin.z -= 0.1;
-            this->obs_end.z -= 0.1;
-        }
-
-        else{
-            this->obs_begin.z += 0.1;
-            this->obs_end.z += 0.1;
-        }
+        if (left_racket_move<2.75)
+            this->left_racket_move += 0.3;
     }
-
     if(this->back){
-        if(this->obs_end.z < 0.0){
-            this->obs_begin.z += 0.1;
-            this->obs_end.z += 0.1;
-        }
-
-        else{
-            this->obs_begin.z -= 0.1;
-            this->obs_end.z -= 0.1;
-        }
+        if (left_racket_move>-2.75)
+            this->left_racket_move -= 0.3;
     }
 
-    if(this->left){
-        if(this->obs_end.x < 0.0){
-            this->obs_begin.x -= 0.03;
-            this->obs_end.x -= 0.03;
-        }
-
-        else{
-            this->obs_begin.x += 0.03;
-            this->obs_end.x += 0.03;
-        }
+    if(this->down_arrow){
+        if (right_racket_move>-2.75)
+            this->right_racket_move -= 0.3;
     }
 
-    if(this->right){
-        if(this->obs_end.x < 0.0){
-            this->obs_begin.x += 0.03;
-            this->obs_end.x += 0.03;
-        }
-
-        else{
-            this->obs_begin.x -= 0.03;
-            this->obs_end.x -= 0.03;
-        }
-    }
-
-    if(this->left_camera){
-        this->angle -= 0.03;
-        this->obs_end.x = this->radium * cos(this->angle);
-        this->obs_end.z = this->radium * sin(this->angle);
-
-#ifdef DEBUG_CAMERA_ROTATION
-        std::cout << "LEFT: \n";
-        std::cout << "OBS END - X: " << this->obs_end.x;
-        std::cout << "\nOBS END - Z: " << this->obs_end.z << "\n\n";
-#endif
-
-    }
-
-    if(this->right_camera){
-        this->angle += 0.03;
-        this->obs_end.x = this->radium * cos(this->angle);
-        this->obs_end.z = this->radium * sin(this->angle);
-
-#ifdef DEBUG_CAMERA_ROTATION
-        std::cout << "RIGHT: \n";
-        std::cout << "OBS END - X: " << this->obs_end.x;
-        std::cout << "\nOBS END - Z: " << this->obs_end.z << "\n\n";
-#endif
+    if(this->up_arrow){
+        if (right_racket_move<2.75)
+            this->right_racket_move += 0.3;
     }
 
     glutPostRedisplay();
@@ -243,14 +279,6 @@ GLvoid Stage::key_pressed(unsigned char key){
 
     case 's':
         this->back = true;
-        break;
-
-    case 'a':
-        this->left = true;
-        break;
-
-    case 'd':
-        this->right = true;
         break;
 
     case 27:
@@ -271,14 +299,6 @@ GLvoid Stage::key_not_pressed(unsigned char key){
         this->back = false;
         break;
 
-    case 'a':
-        this->left = false;
-        break;
-
-    case 'd':
-        this->right = false;
-        break;
-
     default:
         break;
     }
@@ -286,12 +306,12 @@ GLvoid Stage::key_not_pressed(unsigned char key){
 
 GLvoid Stage::special_key_pressed(GLint key){
     switch(key){
-    case GLUT_KEY_LEFT:
-        this->left_camera = true;
+    case GLUT_KEY_DOWN:
+        this->down_arrow = true;
         break;
 
-    case GLUT_KEY_RIGHT:
-        this->right_camera = true;
+    case GLUT_KEY_UP:
+        this->up_arrow = true;
         break;
 
     default:
@@ -301,12 +321,12 @@ GLvoid Stage::special_key_pressed(GLint key){
 
 GLvoid Stage::special_key_not_pressed(GLint key){
     switch(key){
-    case GLUT_KEY_LEFT:
-        this->left_camera = false;
+    case GLUT_KEY_DOWN:
+        this->down_arrow = false;
         break;
 
-    case GLUT_KEY_RIGHT:
-        this->right_camera = false;
+    case GLUT_KEY_UP:
+        this->up_arrow = false;
         break;
 
     default:
