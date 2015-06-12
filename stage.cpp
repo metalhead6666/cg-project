@@ -1,22 +1,26 @@
 #include "stage.h"
 
+Stage *s_stage;
+
 Stage::Stage(){
     this->wScreen = 1280;
     this->hScreen = 720;
 
-    this->width = 5.0;
+    this->width = 10.0;
     this->height = 2.0;
     this->length = 5.0;
     
-    this->board_width = 4.0;
+    this->board_width = 8.0;
     this->board_length = 4.0;
     this->board_height = 1.0;
     
     this->racket_width = 0.05;
     this->racket_length = 1.0;
     this->racket_height = 0.5;
-    this->left_racket_move=0.0;
-    this->right_racket_move=0.0;
+    this->left_racket_move = 0.0;
+    this->right_racket_move = 0.0;
+    this->ball_going_down = 1.75;
+    this->observer_position = true;
 
     this->angle = 0.0;
     this->radium = 5.0;
@@ -28,16 +32,18 @@ Stage::Stage(){
 
     this->obs_begin.x = 0.0;
     this->obs_begin.y = 10.0;
-    this->obs_begin.z = 0;
+    this->obs_begin.z = 0.0;
 
     this->obs_end.x = this->obs_begin.x;
     this->obs_end.y = 0.0;
-    this->obs_end.z = 0;
+    this->obs_end.z = this->obs_begin.z;
 
     this->front = false;
     this->back = false;
     this->left = false;
     this->right = false;
+
+    s_stage = this;
 }
 
 Stage::~Stage(){
@@ -73,12 +79,23 @@ GLvoid Stage::display(){
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 0.0, 1.0);
+
+    if(observer_position){
+        gluLookAt(5.0, 1.0, 0.0, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 1.0, 0.0);
+    }
+
+    else{
+        gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 0.0, 1.0);
+    }
 
     this->draw_world();
     this->draw_board();
     this->draw_character();
     this->keyboard();
+
+    if(observer_position){
+        glutTimerFunc(100, &Stage::static_timer_ball_going_down, 3);
+    }
 
     glutSwapBuffers();
 }
@@ -162,80 +179,70 @@ GLvoid Stage::draw_world(){
 
 GLvoid Stage::draw_board(){
     glPushMatrix();
-    glColor4d(BLUE);
-    //glTranslated(0.0, -0.7, 1.0);
-    
-    glCullFace(GL_FRONT);
-    glPushMatrix();
-        glBegin(GL_QUADS);
-        //Bottom
-            glVertex3d(-board_width, 0.5, -board_length);
-            glVertex3d(board_width, 0.5, -board_length);
-            glVertex3d(board_width, 0.5, board_length);
-            glVertex3d(-board_width, 0.5, board_length);
-        glEnd();
-    glPopMatrix();
-    
-    glCullFace(GL_BACK);
-    glPushMatrix();
         glColor4d(BLUE);
-        glBegin(GL_QUADS);
-        //Up
-            glVertex3d(-board_width, board_height, -board_length);
-            glVertex3d(board_width, board_height, -board_length);
-            glVertex3d(board_width, board_height, board_length);
-            glVertex3d(-board_width, board_height, board_length);
-        glEnd();
-    glPopMatrix();
-    //RACKET
-    glCullFace(GL_FRONT);
-    glPushMatrix();
-        glColor4d(BROWN);
-        glTranslated(0.0, 0.0, right_racket_move);
-        glBegin(GL_QUADS);
-        //Left
-            glVertex3d(-board_width, 0.0, -racket_length);
-            glVertex3d(-board_width, 0.0, racket_length);
-            glVertex3d(-board_width, board_height, racket_length);
-            glVertex3d(-board_width, board_height, -racket_length);
-        glEnd();
-    glPopMatrix();
-    //RACKET
-    glCullFace(GL_BACK);
-    glPushMatrix();
-        glColor4d(GREEN);
-        glTranslated(0.0, 0.0, left_racket_move);
-        glBegin(GL_QUADS);
-        //Right
-            glVertex3d(board_width, 0.0, -racket_length);
-            glVertex3d(board_width, 0.0, racket_length);
-            glVertex3d(board_width, board_height, racket_length);
-            glVertex3d(board_width, board_height, -racket_length);
-        glEnd();
-    glPopMatrix();
-    
-    glPushMatrix();
-        glColor4d(ORANGE);
-        glBegin(GL_QUADS);
-        //Front
-            glVertex3d(-board_width, 0.5, board_length);
-            glVertex3d(-board_width, board_height, board_length);
-            glVertex3d(board_width, board_height, board_length);
-            glVertex3d(board_width, 0.5, board_length);
-        glEnd();
-    glPopMatrix();
-    
-    glCullFace(GL_FRONT);
-    glPushMatrix();
-        glColor4d(RED);
-        glBegin(GL_QUADS);
-        //Back
-            glVertex3d(-board_width, 0.5, -board_length);
-            glVertex3d(-board_width, board_height, -board_length);
-            glVertex3d(board_width, board_height, -board_length);
-            glVertex3d(board_width, 0.5, -board_length);
-        glEnd();
-    glPopMatrix();
+        //glTranslated(0.0, -0.7, 1.0);
+
+        glCullFace(GL_FRONT);
+        glPushMatrix();
+            glBegin(GL_QUADS);
+                //Bottom
+                glVertex3d(-board_width, 0.5, -board_length);
+                glVertex3d(board_width, 0.5, -board_length);
+                glVertex3d(board_width, 0.5, board_length);
+                glVertex3d(-board_width, 0.5, board_length);
+            glEnd();
+        glPopMatrix();
+
+        //RACKET
+        glCullFace(GL_FRONT);
+        glPushMatrix();
+            glColor4d(GREEN);
+            glTranslated(0.0, 0.0, right_racket_move);
+            glBegin(GL_QUADS);
+                //Left
+                glVertex3d(-board_width, 0.0, -racket_length);
+                glVertex3d(-board_width, 0.0, racket_length);
+                glVertex3d(-board_width, board_height, racket_length);
+                glVertex3d(-board_width, board_height, -racket_length);
+            glEnd();
+        glPopMatrix();
+
+        //RACKET
+        glCullFace(GL_BACK);
+        glPushMatrix();
+            glColor4d(BROWN);
+            glTranslated(0.0, 0.0, left_racket_move);
+            glBegin(GL_QUADS);
+                //Right
+                glVertex3d(board_width, 0.0, -racket_length);
+                glVertex3d(board_width, 0.0, racket_length);
+                glVertex3d(board_width, board_height, racket_length);
+                glVertex3d(board_width, board_height, -racket_length);
+            glEnd();
+        glPopMatrix();
+
+        glPushMatrix();
+            glColor4d(ORANGE);
+            glBegin(GL_QUADS);
+                //Front
+                glVertex3d(-board_width, 0.5, board_length);
+                glVertex3d(-board_width, board_height, board_length);
+                glVertex3d(board_width, board_height, board_length);
+                glVertex3d(board_width, 0.5, board_length);
+            glEnd();
+        glPopMatrix();
+
+        glCullFace(GL_FRONT);
+        glPushMatrix();
+            glColor4d(RED);
+            glBegin(GL_QUADS);
+                //Back
+                glVertex3d(-board_width, 0.5, -board_length);
+                glVertex3d(-board_width, board_height, -board_length);
+                glVertex3d(board_width, board_height, -board_length);
+                glVertex3d(board_width, 0.5, -board_length);
+            glEnd();
+        glPopMatrix();
     glPopMatrix();
 }
 
@@ -243,29 +250,34 @@ GLvoid Stage::draw_character(){
     glPushMatrix();
         glColor4d(WHITE);
         //glRotated(this->radium * cos(this->angle), 0.0, 0.0, 1.0);
-        glTranslated(0.0, 1.0, 0);
+        glTranslated(0.0, this->ball_going_down, 0);
         glutSolidSphere(0.25, 25, 25);
     glPopMatrix();
 }
 
 GLvoid Stage::keyboard(){
     if(this->front){
-        if (left_racket_move<2.75)
+        if(left_racket_move < 2.75){
             this->left_racket_move += 0.3;
+        }
     }
+
     if(this->back){
-        if (left_racket_move>-2.75)
+        if(left_racket_move > -2.75){
             this->left_racket_move -= 0.3;
+        }
     }
 
     if(this->down_arrow){
-        if (right_racket_move>-2.75)
+        if(right_racket_move > -2.75){
             this->right_racket_move -= 0.3;
+        }
     }
 
     if(this->up_arrow){
-        if (right_racket_move<2.75)
+        if(right_racket_move < 2.75){
             this->right_racket_move += 0.3;
+        }
     }
 
     glutPostRedisplay();
@@ -332,4 +344,48 @@ GLvoid Stage::special_key_not_pressed(GLint key){
     default:
         break;
     }
+}
+
+GLvoid Stage::writeText(char *text){
+    const char *c;
+
+    glColor4d(PINK);
+    glPushMatrix();
+        glTranslated(2.0, 1.5, 0.0);
+        glRasterPos2f(0.0, 0.0);
+
+        for(c = text; *c != '\0'; ++c){
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+        }
+    glPopMatrix();
+}
+
+GLvoid Stage::Timer_ball_going_down(GLint value){
+    char *aux;
+
+    if(!value){
+        aux = (char *)calloc(1, sizeof(char) * 4);
+        strcpy(aux, "Go!");
+        writeText(aux);
+        free(aux);
+        observer_position = false;
+        return;
+    }
+
+    if(ball_going_down > 0.75){
+        ball_going_down -= 0.01;
+        glutTimerFunc(100, &Stage::static_timer_ball_going_down, value);
+    }
+
+    else{
+        aux = (char *)calloc(1, sizeof(char) * 2);
+        sprintf(aux, "%d", value);
+        writeText(aux);
+        free(aux);
+        glutTimerFunc(1000, &Stage::static_timer_ball_going_down, value - 1);
+    }
+}
+
+void Stage::static_timer_ball_going_down(GLint value){
+    s_stage->Timer_ball_going_down(value);
 }
