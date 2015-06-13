@@ -10,6 +10,8 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
+#include <ctime>
 
 //#define DEBUG_MODELVIEW
 //#define DEBUG_SPHERE
@@ -59,6 +61,7 @@ private:
     GLvoid draw_board();
     GLvoid writeText(char *text);
     GLvoid writePoints();
+    GLdouble randomGenerator(GLdouble min, GLdouble max);
 
     /* variables */
     GLsizei wScreen, hScreen;
@@ -70,6 +73,7 @@ private:
     GLdouble racket_width, racket_length, racket_height;
     GLdouble left_racket_move, right_racket_move;
     GLdouble ball_going_down;
+    GLdouble actual_speed_x, actual_speed_z;
     GLdouble ball_speed_x, ball_speed_z, ball_pos_x, ball_pos_z;
     GLfloat matrix_top[4][4], matrix_bottom[4][4];    
     GLfloat matrix_player_left[4][4], matrix_player_right[4][4];

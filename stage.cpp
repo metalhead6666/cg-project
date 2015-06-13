@@ -24,10 +24,12 @@ Stage::Stage(){
     /* mexer aqui caralho */
     this->observer_position = false;
     
+    this->actual_speed_x = 0.1;
+    this->actual_speed_z = 0.1;
     this->ball_pos_x = 0.0;
     this->ball_pos_z = 0.0;
-    this->ball_speed_x = 0.1;
-    this->ball_speed_z = 0.1;
+    this->ball_speed_x = actual_speed_x;
+    this->ball_speed_z = actual_speed_z;
 
     this->angle = 0.0;
     this->radium = 5.0;
@@ -55,6 +57,7 @@ Stage::Stage(){
     this->player_one_points = 0;
     this->player_two_points = 0;
 
+    srand(time(NULL));
     s_stage = this;
 }
 
@@ -444,16 +447,16 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
         printf("[DEBUG] %f %f\n", matrix_ball[3][0], matrix_player_left[3][0]);
 #endif
         if((matrix_ball[3][0] - 0.25 <= matrix_player_left[3][0] &&
-           (matrix_ball[3][1] <= matrix_player_left[3][1] + 1.2 &&
-            matrix_ball[3][1] >= matrix_player_left[3][1] - 1.2))){
+           (matrix_ball[3][1] <= matrix_player_left[3][1] + 1.1 &&
+            matrix_ball[3][1] >= matrix_player_left[3][1] - 1.1))){
 
             this->ball_speed_x *= -1.0;
             this->ball_pos_x -= 0.25;
         }
 
         else if((matrix_ball[3][0] + 0.25 >= matrix_player_right[3][0] &&
-                (matrix_ball[3][1] <= matrix_player_right[3][1] + 1.2 &&
-                 matrix_ball[3][1] >= matrix_player_right[3][1] - 1.2))){
+                (matrix_ball[3][1] <= matrix_player_right[3][1] + 1.1 &&
+                 matrix_ball[3][1] >= matrix_player_right[3][1] - 1.1))){
 
             this->ball_speed_x *= -1.0;
             this->ball_pos_x += 0.25;
@@ -463,18 +466,26 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
             this->ball_speed_z *= -1.0;
         }
 
-        if(matrix_ball[3][0] - 0.25 <= -9.0){
+        if(matrix_ball[3][0] - 0.25 <= -8.75){
             this->ball_speed_x *= -1.0;
             ++this->player_two_points;
+
+            this->ball_pos_z = randomGenerator(-3.0, 3.0);
+            this->ball_speed_z = randomGenerator(-actual_speed_z, actual_speed_z);
+
             this->ball_pos_x = -ball_speed_x;
-            this->ball_pos_z = -ball_speed_z;
+            this->ball_pos_z -= ball_speed_z;
         }
 
-        else if(matrix_ball[3][0] + 0.25 >= 9.0){
+        else if(matrix_ball[3][0] + 0.25 >= 8.75){
             this->ball_speed_x *= -1.0;
             ++this->player_one_points;
+
+            this->ball_pos_z = randomGenerator(-3.0, 3.0);
+            this->ball_speed_z = randomGenerator(-actual_speed_z, actual_speed_z);
+
             this->ball_pos_x = -ball_speed_x;
-            this->ball_pos_z = -ball_speed_z;
+            this->ball_pos_z -= ball_speed_z;
         }
 
         this->ball_pos_x += ball_speed_x;
@@ -486,4 +497,10 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
 
 void Stage::static_timer_ball_going_down(GLint value){
     s_stage->Timer_ball_going_down(value);
+}
+
+GLdouble Stage::randomGenerator(GLdouble min, GLdouble max){
+    GLdouble f = (GLdouble)rand() / RAND_MAX;
+
+    return min + f * (max - min);
 }
