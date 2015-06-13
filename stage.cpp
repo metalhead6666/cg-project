@@ -444,28 +444,34 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
         printf("[DEBUG] %f %f\n", matrix_ball[3][0], matrix_player_left[3][0]);
 #endif
         if((matrix_ball[3][0] - 0.25 <= matrix_player_left[3][0] &&
-          ((matrix_ball[3][1] <= matrix_player_left[3][1] + 1.2) &&
-           (matrix_ball[3][1] >= matrix_player_left[3][1] - 1.2))) ||
-           (matrix_ball[3][0] + 0.25 >= matrix_player_right[3][0] &&
-          ((matrix_ball[3][1] <= matrix_player_right[3][1] + 1.2) &&
-           (matrix_ball[3][1] >= matrix_player_right[3][1] - 1.2)))){
+           (matrix_ball[3][1] <= matrix_player_left[3][1] + 1.2 &&
+            matrix_ball[3][1] >= matrix_player_left[3][1] - 1.2))){
 
-            ball_speed_x *= -1.0;
+            this->ball_speed_x *= -1.0;
+            this->ball_pos_x -= 0.25;
+        }
+
+        else if((matrix_ball[3][0] + 0.25 >= matrix_player_right[3][0] &&
+                (matrix_ball[3][1] <= matrix_player_right[3][1] + 1.2 &&
+                 matrix_ball[3][1] >= matrix_player_right[3][1] - 1.2))){
+
+            this->ball_speed_x *= -1.0;
+            this->ball_pos_x += 0.25;
         }
 
         if(this->ball_pos_z + 0.25 >= 4.0 || this->ball_pos_z - 0.25 <= -4.0){
-            ball_speed_z *= -1.0;
+            this->ball_speed_z *= -1.0;
         }
 
-        if(matrix_ball[3][0] - 0.25 <= -8.5){
-            ball_speed_x *= -1.0;
+        if(matrix_ball[3][0] - 0.25 <= -9.0){
+            this->ball_speed_x *= -1.0;
             ++this->player_two_points;
             this->ball_pos_x = -ball_speed_x;
             this->ball_pos_z = -ball_speed_z;
         }
 
-        else if(matrix_ball[3][0] + 0.25 >= 8.5){
-            ball_speed_x *= -1.0;
+        else if(matrix_ball[3][0] + 0.25 >= 9.0){
+            this->ball_speed_x *= -1.0;
             ++this->player_one_points;
             this->ball_pos_x = -ball_speed_x;
             this->ball_pos_z = -ball_speed_z;
