@@ -12,7 +12,7 @@
 #include <cstring>
 
 //#define DEBUG_MODELVIEW
-#define DEBUG_SPHERE
+//#define DEBUG_SPHERE
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
 

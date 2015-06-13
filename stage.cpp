@@ -19,9 +19,10 @@ Stage::Stage(){
     this->racket_height = 0.5;
     this->left_racket_move = 0.0;
     this->right_racket_move = 0.0;
-    this->ball_going_down = 1.75;
+    /* mexer aqui caralho, 0.75/false ou 1.75/true */
+    this->ball_going_down = 0.75;
     /* mexer aqui caralho */
-    this->observer_position = true;
+    this->observer_position = false;
     
     this->ball_pos_x = 0.0;
     this->ball_pos_z = 0.0;
@@ -49,8 +50,8 @@ Stage::Stage(){
     this->left = false;
     this->right = false;
 
-    /* mexer aqui caralho, 3 ou -1 */
-    this->timer_value = 3;
+    /* mexer aqui caralho, 3/true ou -1/false */
+    this->timer_value = -1;
     this->player_one_points = 0;
     this->player_two_points = 0;
 
@@ -213,17 +214,16 @@ GLvoid Stage::draw_board(){
         glCullFace(GL_FRONT);
         glPushMatrix();
             glColor4d(GREEN);
-            glTranslatef(0.0, 0.0, right_racket_move);
+            glTranslated(-board_width, 0.0, right_racket_move);
                 glBegin(GL_QUADS);
-                    glVertex3d(-board_width, 0.0, -racket_length);
-                    glVertex3d(-board_width, 0.0, racket_length);
-                    glVertex3d(-board_width, board_height, racket_length);
-                    glVertex3d(-board_width, board_height, -racket_length);
+                    glVertex3d(0.0, 0.0, -racket_length);
+                    glVertex3d(0.0, 0.0, racket_length);
+                    glVertex3d(0.0, board_height, racket_length);
+                    glVertex3d(0.0, board_height, -racket_length);
                 glEnd();
-            glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_player_right[0][0]);
-            matrix_player_right[3][0] = 8;
+            glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_player_right[0][0]);
 #ifdef DEBUG_PLAYER_RIGHT
-            printf("[PLAYER RIGHT] %lf %lf %lf\n",matrix_player_right[3][0],matrix_player_right[3][1],matrix_player_right[3][2]);
+            printf("[PLAYER RIGHT] %f %f %f\n", matrix_player_right[3][0], matrix_player_right[3][1], matrix_player_right[3][2]);
 #endif
         glPopMatrix();
     
@@ -231,20 +231,19 @@ GLvoid Stage::draw_board(){
         glCullFace(GL_BACK);
         glPushMatrix();
             glColor4d(BROWN);
-            glTranslatef(0.0, 0.0, left_racket_move);
+            glTranslated(board_width, 0.0, left_racket_move);
                 glBegin(GL_QUADS);
-                    glVertex3d(board_width, 0.0, -racket_length);
-                    glVertex3d(board_width, 0.0, racket_length);
-                    glVertex3d(board_width, board_height, racket_length);
-                    glVertex3d(board_width, board_height, -racket_length);
+                    glVertex3d(0.0, 0.0, -racket_length);
+                    glVertex3d(0.0, 0.0, racket_length);
+                    glVertex3d(0.0, board_height, racket_length);
+                    glVertex3d(0.0, board_height, -racket_length);
                 glEnd();
-            glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_player_left[0][0]);
-            matrix_player_left[3][0] = -8;
+            glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_player_left[0][0]);
 #ifdef DEBUG_PLAYER_LEFT
-            printf("[PLAYER LEFT] %lf %lf %lf\n",matrix_player_left[3][0],matrix_player_left[3][1],matrix_player_left[3][2]);
+            printf("[PLAYER LEFT] %f %f %f\n", matrix_player_left[3][0], matrix_player_left[3][1], matrix_player_left[3][2]);
 #endif
         glPopMatrix();
-    
+
         glPushMatrix();
             glColor4d(ORANGE);
                 glBegin(GL_QUADS);
@@ -254,7 +253,7 @@ GLvoid Stage::draw_board(){
                     glVertex3d(board_width, board_height, board_length);
                     glVertex3d(board_width, 0.5, board_length);
                 glEnd();
-            glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_top[0][0]);
+            glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_top[0][0]);
         glPopMatrix();
     
         glCullFace(GL_FRONT);
@@ -267,19 +266,19 @@ GLvoid Stage::draw_board(){
                     glVertex3d(board_width, board_height, -board_length);
                     glVertex3d(board_width, 0.5, -board_length);
                 glEnd();
-            glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_bottom[0][0]);
+            glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_bottom[0][0]);
         glPopMatrix();
     glPopMatrix();
 }
 
 GLvoid Stage::draw_character(){
     glPushMatrix();
-    glColor4d(WHITE);
-    glTranslatef(ball_pos_x, ball_going_down, ball_pos_z);
+    glColor4d(PINK);
+    glTranslated(ball_pos_x, ball_going_down, ball_pos_z);
     glutSolidSphere(0.25, 25, 25);
-    glGetFloatv(GL_MODELVIEW_MATRIX,&matrix_ball[0][0]);
+    glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_ball[0][0]);
 #ifdef DEBUG_SPHERE
-    printf("[SPHERE] %lf %lf %lf\n",matrix_ball[3][0],matrix_ball[3][1],matrix_ball[3][2]);
+    printf("[SPHERE] %f %f %f\n", matrix_ball[3][0], matrix_ball[3][1], matrix_ball[3][2]);
 #endif
     glPopMatrix();
 }
@@ -418,29 +417,10 @@ GLvoid Stage::writePoints(){
 }
 
 GLvoid Stage::Timer_ball_going_down(GLint value){
-    if(!observer_position){
-#ifdef DEBUG_MODELVIEW
-        printf("[DEBUG]%lf %lf\n",matrix_ball[3][0],matrix_player_left[3][0]);
-#endif
-        if((matrix_ball[3][0]-0.25 <= matrix_player_left[3][0] && ((matrix_ball[3][1]<=matrix_player_left[3][1]+1) && (matrix_ball[3][1]>=matrix_player_left[3][1]-1)))
-           || (matrix_ball[3][0]+0.25 >= matrix_player_right[3][0] && ((matrix_ball[3][1]<=matrix_player_right[3][1]+1) && (matrix_ball[3][1]>=matrix_player_right[3][1]-1)))){
-            ball_speed_x *= -1.0;
-        }
-        
-        if((this->ball_pos_z+0.25)>=4.0 || (this->ball_pos_z-0.25)<=-4.0){
-            ball_speed_z *= -1.0;
-        }
-        
-        this->ball_pos_x += ball_speed_x;
-        this->ball_pos_z += ball_speed_z;
-        glutPostRedisplay();
-        glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
-    }
-    
-    else{
+    if(observer_position){
         timer_value = value;
 
-        if(!value){
+        if(value == 0){
             observer_position = false;
             timer_value = -1;
             glutPostRedisplay();
@@ -457,6 +437,30 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
             glutPostRedisplay();
             glutTimerFunc(1000, &Stage::static_timer_ball_going_down, value - 1);
         }
+    }
+    
+    else{
+#ifdef DEBUG_MODELVIEW
+        printf("[DEBUG] %f %f\n", matrix_ball[3][0], matrix_player_left[3][0]);
+#endif
+        if((matrix_ball[3][0] - 0.25 <= matrix_player_left[3][0] &&
+          ((matrix_ball[3][1] <= matrix_player_left[3][1] + 1) &&
+           (matrix_ball[3][1] >= matrix_player_left[3][1] - 1))) ||
+           (matrix_ball[3][0] + 0.25 >= matrix_player_right[3][0] &&
+          ((matrix_ball[3][1] <= matrix_player_right[3][1] + 1) &&
+           (matrix_ball[3][1] >= matrix_player_right[3][1] - 1)))){
+
+            ball_speed_x *= -1.0;
+        }
+
+        if(this->ball_pos_z + 0.25 >= 4.0 || this->ball_pos_z - 0.25 <= -4.0){
+            ball_speed_z *= -1.0;
+        }
+
+        this->ball_pos_x += ball_speed_x;
+        this->ball_pos_z += ball_speed_z;
+        glutPostRedisplay();
+        glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
     }
 }
 
