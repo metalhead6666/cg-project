@@ -6,6 +6,8 @@ Stage::Stage(){
     this->wScreen = 1280;
     this->hScreen = 720;
 
+    this->pause_game = false;
+
     this->width = 10.0;
     this->height = 2.0;
     this->length = 5.0;
@@ -21,7 +23,7 @@ Stage::Stage(){
     this->right_racket_move = 0.0;
     /* mexer aqui caralho, 0.75/false ou 1.75/true */
     this->ball_going_down = 0.75;
-    /* mexer aqui caralho */
+    /* mexer aqui caralho true/start screen ou false/jogo em si*/
     this->observer_position = false;
     
     this->actual_speed_x = 0.1;
@@ -90,14 +92,14 @@ GLvoid Stage::display(){
 
     glViewport(0, 0, this->wScreen, this->hScreen);
 
-    if(timer_value == -1){
+    if(this->timer_value == -1){
         writePoints();
     }
 
     else{
         aux = (char *)calloc(1, sizeof(char) * 2);
         sprintf(aux, "%d", timer_value);
-        writeText(aux);
+        writeText(aux, 2.0, 1.5);
         free(aux);
     }
 
@@ -119,7 +121,19 @@ GLvoid Stage::display(){
     this->draw_world();
     this->draw_board();
     this->draw_character();
-    this->keyboard();
+
+    if(this->pause_game){
+        aux = (char *)calloc(1, sizeof(char) * 2);
+        strcpy(aux, "PAUSED");
+        writeText(aux, 1.0, 1.0);
+        free(aux);
+    }
+
+    else{
+        if(this->timer_value == -1){
+            this->keyboard();
+        }
+    }
 
     glutSwapBuffers();
 }
@@ -317,11 +331,18 @@ GLvoid Stage::keyboard(){
 GLvoid Stage::key_pressed(unsigned char key){
     switch(key){
     case 'w':
+    case 'W':
         this->front = true;
         break;
 
     case 's':
+    case 'S':
         this->back = true;
+        break;
+
+    case 'p':
+    case 'P':
+        this->pause_game = !this->pause_game;
         break;
 
     case 27:
@@ -330,21 +351,27 @@ GLvoid Stage::key_pressed(unsigned char key){
     default:
         break;
     }
+
+    glutPostRedisplay();
 }
 
 GLvoid Stage::key_not_pressed(unsigned char key){
     switch(key){
     case 'w':
+    case 'W':
         this->front = false;
         break;
 
     case 's':
+    case 'S':
         this->back = false;
         break;
 
     default:
         break;
     }
+
+    glutPostRedisplay();
 }
 
 GLvoid Stage::special_key_pressed(GLint key){
@@ -360,6 +387,8 @@ GLvoid Stage::special_key_pressed(GLint key){
     default:
         break;
     }
+
+    glutPostRedisplay();
 }
 
 GLvoid Stage::special_key_not_pressed(GLint key){
@@ -375,14 +404,16 @@ GLvoid Stage::special_key_not_pressed(GLint key){
     default:
         break;
     }
+
+    glutPostRedisplay();
 }
 
-GLvoid Stage::writeText(char *text){
+GLvoid Stage::writeText(char *text, GLdouble posX, GLdouble posY){
     const char *c;
 
     glColor4d(PINK);
     glPushMatrix();
-        glRasterPos2d(2.0, 1.5);
+        glRasterPos2d(posX, posY);
 
         for(c = text; *c != '\0'; ++c){
             glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
@@ -420,78 +451,84 @@ GLvoid Stage::writePoints(){
 }
 
 GLvoid Stage::Timer_ball_going_down(GLint value){
-    if(observer_position){
-        timer_value = value;
+    if(this->pause_game){
+        glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
+    }
 
-        if(value == 0){
-            observer_position = false;
-            timer_value = -1;
-            glutPostRedisplay();
-            glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
-        }
+    else{
+        if(observer_position){
+            timer_value = value;
 
-        else if(ball_going_down > 0.75){
-            ball_going_down -= 0.01;
-            glutPostRedisplay();
-            glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
+            if(value == 0){
+                observer_position = false;
+                timer_value = -1;
+                glutPostRedisplay();
+                glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
+            }
+
+            else if(ball_going_down > 0.75){
+                ball_going_down -= 0.01;
+                glutPostRedisplay();
+                glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
+            }
+
+            else{
+                glutPostRedisplay();
+                glutTimerFunc(1000, &Stage::static_timer_ball_going_down, value - 1);
+            }
         }
 
         else{
+    #ifdef DEBUG_MODELVIEW
+            printf("[DEBUG] %f %f\n", matrix_ball[3][0], matrix_player_left[3][0]);
+    #endif
+            if((matrix_ball[3][0] - 0.25 <= matrix_player_left[3][0] &&
+               (matrix_ball[3][1] <= matrix_player_left[3][1] + 1.1 &&
+                matrix_ball[3][1] >= matrix_player_left[3][1] - 1.1))){
+
+                this->ball_speed_x *= -1.0;
+                this->ball_pos_x -= 0.25;
+            }
+
+            else if((matrix_ball[3][0] + 0.25 >= matrix_player_right[3][0] &&
+                    (matrix_ball[3][1] <= matrix_player_right[3][1] + 1.1 &&
+                     matrix_ball[3][1] >= matrix_player_right[3][1] - 1.1))){
+
+                this->ball_speed_x *= -1.0;
+                this->ball_pos_x += 0.25;
+            }
+
+            if(this->ball_pos_z + 0.25 >= 4.0 || this->ball_pos_z - 0.25 <= -4.0){
+                this->ball_speed_z *= -1.0;
+            }
+
+            if(matrix_ball[3][0] - 0.25 <= -8.75){
+                this->ball_speed_x *= -1.0;
+                ++this->player_two_points;
+
+                this->ball_pos_z = randomGenerator(-3.0, 3.0);
+                this->ball_speed_z = randomGenerator(-actual_speed_z, actual_speed_z);
+
+                this->ball_pos_x = -ball_speed_x;
+                this->ball_pos_z -= ball_speed_z;
+            }
+
+            else if(matrix_ball[3][0] + 0.25 >= 8.75){
+                this->ball_speed_x *= -1.0;
+                ++this->player_one_points;
+
+                this->ball_pos_z = randomGenerator(-3.0, 3.0);
+                this->ball_speed_z = randomGenerator(-actual_speed_z, actual_speed_z);
+
+                this->ball_pos_x = -ball_speed_x;
+                this->ball_pos_z -= ball_speed_z;
+            }
+
+            this->ball_pos_x += ball_speed_x;
+            this->ball_pos_z += ball_speed_z;
             glutPostRedisplay();
-            glutTimerFunc(1000, &Stage::static_timer_ball_going_down, value - 1);
+            glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
         }
-    }
-    
-    else{
-#ifdef DEBUG_MODELVIEW
-        printf("[DEBUG] %f %f\n", matrix_ball[3][0], matrix_player_left[3][0]);
-#endif
-        if((matrix_ball[3][0] - 0.25 <= matrix_player_left[3][0] &&
-           (matrix_ball[3][1] <= matrix_player_left[3][1] + 1.1 &&
-            matrix_ball[3][1] >= matrix_player_left[3][1] - 1.1))){
-
-            this->ball_speed_x *= -1.0;
-            this->ball_pos_x -= 0.25;
-        }
-
-        else if((matrix_ball[3][0] + 0.25 >= matrix_player_right[3][0] &&
-                (matrix_ball[3][1] <= matrix_player_right[3][1] + 1.1 &&
-                 matrix_ball[3][1] >= matrix_player_right[3][1] - 1.1))){
-
-            this->ball_speed_x *= -1.0;
-            this->ball_pos_x += 0.25;
-        }
-
-        if(this->ball_pos_z + 0.25 >= 4.0 || this->ball_pos_z - 0.25 <= -4.0){
-            this->ball_speed_z *= -1.0;
-        }
-
-        if(matrix_ball[3][0] - 0.25 <= -8.75){
-            this->ball_speed_x *= -1.0;
-            ++this->player_two_points;
-
-            this->ball_pos_z = randomGenerator(-3.0, 3.0);
-            this->ball_speed_z = randomGenerator(-actual_speed_z, actual_speed_z);
-
-            this->ball_pos_x = -ball_speed_x;
-            this->ball_pos_z -= ball_speed_z;
-        }
-
-        else if(matrix_ball[3][0] + 0.25 >= 8.75){
-            this->ball_speed_x *= -1.0;
-            ++this->player_one_points;
-
-            this->ball_pos_z = randomGenerator(-3.0, 3.0);
-            this->ball_speed_z = randomGenerator(-actual_speed_z, actual_speed_z);
-
-            this->ball_pos_x = -ball_speed_x;
-            this->ball_pos_z -= ball_speed_z;
-        }
-
-        this->ball_pos_x += ball_speed_x;
-        this->ball_pos_z += ball_speed_z;
-        glutPostRedisplay();
-        glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
     }
 }
 

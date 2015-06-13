@@ -59,12 +59,13 @@ private:
     GLvoid draw_character();
     GLvoid keyboard();
     GLvoid draw_board();
-    GLvoid writeText(char *text);
+    GLvoid writeText(char *text, GLdouble posX, GLdouble posY);
     GLvoid writePoints();
     GLdouble randomGenerator(GLdouble min, GLdouble max);
 
     /* variables */
     GLsizei wScreen, hScreen;
+    GLboolean pause_game;
 
     GLdouble angle, radium;
     GLdouble fov, aspect, near, far;
