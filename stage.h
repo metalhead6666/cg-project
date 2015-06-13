@@ -12,7 +12,7 @@
 #include <cstring>
 
 //#define DEBUG_MODELVIEW
-//#define DEBUG_SPHERE
+#define DEBUG_SPHERE
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
 
@@ -71,7 +71,7 @@ private:
     GLdouble left_racket_move, right_racket_move;
     GLdouble ball_going_down;
     GLdouble ball_speed_x, ball_speed_z, ball_pos_x, ball_pos_z;
-    GLfloat matrix_top[4][4], matrix_bottom[4][4];
+    GLfloat matrix_top[4][4], matrix_bottom[4][4];    
     GLfloat matrix_player_left[4][4], matrix_player_right[4][4];
     GLfloat matrix_ball[4][4];
     GLboolean observer_position;
