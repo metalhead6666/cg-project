@@ -38,8 +38,8 @@ Stage::Stage(){
 
     this->fov = 70.0;
     this->aspect = (GLdouble)this->wScreen / (GLdouble)this->hScreen;
-    this->near = 1.0;
-    this->far = 1000.0;
+    this->near_p = 1.0;
+    this->far_p = 1000.0;
 
     this->obs_begin.x = 0.0;
     this->obs_begin.y = 10.0;
@@ -74,7 +74,9 @@ GLvoid Stage::start_stage(){
     glutCreateWindow("Crappy name "); /* TODO: change this name */
 
     glClearColor(BLACK);
+    this->loadTextures();
 
+    glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
@@ -105,7 +107,7 @@ GLvoid Stage::display(){
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(this->fov, this->aspect, this->near, this->far);
+    gluPerspective(this->fov, this->aspect, this->near_p, this->far_p);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -140,17 +142,24 @@ GLvoid Stage::display(){
 
 GLvoid Stage::draw_world(){
     glPushMatrix();
-        glColor4d(WHITE);
+        //glColor4d(WHITE);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_environment);
         glCullFace(GL_FRONT);
         glPushMatrix();
             glBegin(GL_QUADS);
                 //Bottom
+                glTexCoord2f(0.0f, 0.0f);
                 glVertex3d(-width, 0.0, -length);
+                glTexCoord2f(1.0f, 0.0f);
                 glVertex3d(width, 0.0, -length);
+                glTexCoord2f(1.0f, 1.0f);
                 glVertex3d(width, 0.0, length);
+                glTexCoord2f(0.0f, 1.0f);
                 glVertex3d(-width, 0.0, length);
             glEnd();
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
 
         glCullFace(GL_BACK);
         glPushMatrix();
@@ -215,17 +224,20 @@ GLvoid Stage::draw_world(){
 
 GLvoid Stage::draw_board(){
     glPushMatrix();
-        glColor4d(BLUE);
+        //glColor4d(BLUE);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_floor);
         glCullFace(GL_FRONT);
         glPushMatrix();
             glBegin(GL_QUADS);
                 //Bottom
-                glVertex3d(-board_width, 0.5, -board_length);
-                glVertex3d(board_width, 0.5, -board_length);
-                glVertex3d(board_width, 0.5, board_length);
-                glVertex3d(-board_width, 0.5, board_length);
+                glTexCoord2f(0.0, 0.0); glVertex3d(-board_width, 0.5, -board_length);
+                glTexCoord2f(10.0, 0.0); glVertex3d(board_width, 0.5, -board_length);
+                glTexCoord2f(10.0, 10.0); glVertex3d(board_width, 0.5, board_length);
+                glTexCoord2f(0.0, 10.0); glVertex3d(-board_width, 0.5, board_length);
             glEnd();
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
     
         //RIGHT RACKET
         glCullFace(GL_FRONT);
@@ -261,43 +273,147 @@ GLvoid Stage::draw_board(){
 #endif
         glPopMatrix();
 
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_wall);
         glPushMatrix();
-            glColor4d(ORANGE);
+            //glColor4d(ORANGE);
                 glBegin(GL_QUADS);
                     //Top
-                    glVertex3d(-board_width, 0.5, board_length);
-                    glVertex3d(-board_width, board_height, board_length);
-                    glVertex3d(board_width, board_height, board_length);
-                    glVertex3d(board_width, 0.5, board_length);
+                    glTexCoord2f(0.0, 0.0); glVertex3d(-board_width, 0.5, board_length);
+                    glTexCoord2f(10.0, 0.0); glVertex3d(-board_width, board_height, board_length);
+                    glTexCoord2f(10.0, 10.0); glVertex3d(board_width, board_height, board_length);
+                    glTexCoord2f(0.0, 10.0); glVertex3d(board_width, 0.5, board_length);
                 glEnd();
             glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_top[0][0]);
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
     
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_wall);
         glCullFace(GL_FRONT);
         glPushMatrix();
-            glColor4d(RED);
+            //glColor4d(ORANGE);
                 glBegin(GL_QUADS);
                     //Bottom
-                    glVertex3d(-board_width, 0.5, -board_length);
-                    glVertex3d(-board_width, board_height, -board_length);
-                    glVertex3d(board_width, board_height, -board_length);
-                    glVertex3d(board_width, 0.5, -board_length);
+                    glTexCoord2f(0.0, 0.0); glVertex3d(-board_width, 0.5, -board_length);
+                    glTexCoord2f(10.0, 0.0); glVertex3d(-board_width, board_height, -board_length);
+                    glTexCoord2f(10.0, 10.0); glVertex3d(board_width, board_height, -board_length);
+                    glTexCoord2f(0.0, 10.0); glVertex3d(board_width, 0.5, -board_length);
                 glEnd();
             glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_bottom[0][0]);
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 }
 
 GLvoid Stage::draw_character(){
+    GLUquadricObj* s;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture_ball[0]);
     glPushMatrix();
-    glColor4d(PINK);
-    glTranslated(ball_pos_x, ball_going_down, ball_pos_z);
-    glutSolidSphere(0.25, 25, 25);
-    glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_ball[0][0]);
-#ifdef DEBUG_SPHERE
-    printf("[SPHERE] %f %f %f\n", matrix_ball[3][0], matrix_ball[3][1], matrix_ball[3][2]);
-#endif
+        //glColor4d(WHITE);
+        s = gluNewQuadric();
+        gluQuadricDrawStyle(s, GLU_FILL);
+        gluQuadricNormals(s, GLU_SMOOTH);
+        gluQuadricTexture(s, GL_TRUE);
+        glTranslatef(ball_pos_x, ball_going_down, ball_pos_z);
+        gluSphere(s, 0.25, 25, 25);
+        //glutSolidSphere(0.25,25,25);
+        gluDeleteQuadric(s);
+        glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_ball[0][0]);
+    #ifdef DEBUG_SPHERE
+        printf("[SPHERE] %lf %lf %lf\n",matrix_ball[3][0],matrix_ball[3][1],matrix_ball[3][2]);
+    #endif
     glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+}
+
+GLvoid Stage::loadTextures(){
+    //*********BALL*********
+    //Wood
+    glGenTextures(1, &texture_ball[0]);
+    glBindTexture(GL_TEXTURE_2D, texture_ball[0]);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Ball/ball0.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+    //Glass
+    glGenTextures(1, &texture_ball[1]);
+    glBindTexture(GL_TEXTURE_2D, texture_ball[1]);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Ball/ball1.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+
+    //Rock
+
+    //*********FLOOR*********
+    glGenTextures(1, &texture_floor);
+    glBindTexture(GL_TEXTURE_2D, texture_floor);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    imag.LoadBmpFile("ProjectTextures/Floor/floor2.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+
+    //*********WALLS*********
+    glGenTextures(1, &texture_wall);
+    glBindTexture(GL_TEXTURE_2D, texture_wall);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    imag.LoadBmpFile("ProjectTextures/Wall/brick2.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+
+    //*********PLAYER_LEFT*********
+
+    glGenTextures(1, &texture_left_player[0]);
+    glBindTexture(GL_TEXTURE_2D, texture_left_player[0]);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Player/player1.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+
+    //*********PLAYER_RIGHT*********
+
+
+    //*********ENVIRONMENT*********
+
+    glGenTextures(1, &texture_environment);
+    glBindTexture(GL_TEXTURE_2D, texture_environment);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Environment/environment.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
 }
 
 GLvoid Stage::keyboard(){
@@ -351,8 +467,6 @@ GLvoid Stage::key_pressed(unsigned char key){
     default:
         break;
     }
-
-    glutPostRedisplay();
 }
 
 GLvoid Stage::key_not_pressed(unsigned char key){
@@ -370,8 +484,6 @@ GLvoid Stage::key_not_pressed(unsigned char key){
     default:
         break;
     }
-
-    glutPostRedisplay();
 }
 
 GLvoid Stage::special_key_pressed(GLint key){
@@ -387,8 +499,6 @@ GLvoid Stage::special_key_pressed(GLint key){
     default:
         break;
     }
-
-    glutPostRedisplay();
 }
 
 GLvoid Stage::special_key_not_pressed(GLint key){
@@ -404,8 +514,6 @@ GLvoid Stage::special_key_not_pressed(GLint key){
     default:
         break;
     }
-
-    glutPostRedisplay();
 }
 
 GLvoid Stage::writeText(char *text, GLdouble posX, GLdouble posY){
@@ -430,7 +538,7 @@ GLvoid Stage::writePoints(){
     sprintf(one, "Player One Score: %d", this->player_one_points);
     sprintf(two, "Player Two Score: %d", this->player_two_points);
 
-    glColor4d(BLACK);
+    glColor4d(WHITE);
     glPushMatrix();
         glTranslated(0.0, 0.0, 4.12);
         glRasterPos2d(8.0, 1.0);

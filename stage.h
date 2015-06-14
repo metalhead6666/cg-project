@@ -6,12 +6,12 @@
 #else
     #include <GL/glut.h>
 #endif
-#include <iostream>
-#include <cmath>
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <ctime>
+#include "RgbImage.h"
 
 //#define DEBUG_MODELVIEW
 //#define DEBUG_SPHERE
@@ -61,6 +61,7 @@ private:
     GLvoid draw_board();
     GLvoid writeText(char *text, GLdouble posX, GLdouble posY);
     GLvoid writePoints();
+    GLvoid loadTextures();
     GLdouble randomGenerator(GLdouble min, GLdouble max);
 
     /* variables */
@@ -68,7 +69,7 @@ private:
     GLboolean pause_game;
 
     GLdouble angle, radium;
-    GLdouble fov, aspect, near, far;
+    GLdouble fov, aspect, near_p, far_p;
     GLdouble width, height, length;
     GLdouble board_width, board_length, board_height;
     GLdouble racket_width, racket_length, racket_height;
@@ -86,7 +87,14 @@ private:
     GLint timer_value;
     GLint player_one_points, player_two_points;
 
-    GLboolean front, back, left, right, up_arrow, down_arrow;    
+    GLboolean front, back, left, right, up_arrow, down_arrow;
+
+    /*Textures variables*/
+    GLuint texture_left_player[3], texture_right_player[3];
+    GLuint texture_ball[3];
+    GLuint texture_wall, texture_floor, texture_environment;
+    GLuint tex;
+    RgbImage imag;
 };
 
 #endif // STAGE_H
