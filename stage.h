@@ -17,8 +17,8 @@
 //#define DEBUG_SPHERE
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
-#define DEBUG_POWERUP_TOUCH
-#define GOD_MODE
+//#define DEBUG_POWERUP_TOUCH
+//#define GOD_MODE
 
 /* colors */
 #define BLUE			 0.0, 0.0, 1.0, 1.0
@@ -34,7 +34,7 @@
 /* math values */
 #define PI 3.141529
 
-#define MAX_SCORE 1
+#define MAX_SCORE 10
 
 struct observer{
     GLdouble x, y, z;
@@ -85,6 +85,7 @@ private:
     GLvoid loadTextures();
     GLdouble randomGenerator(GLdouble min, GLdouble max);
     GLint randomIntGenerator(GLint min, GLint max);
+    GLvoid draw_wall(GLint type);
 
     /* variables */
     GLsizei wScreen, hScreen;
@@ -103,6 +104,8 @@ private:
     GLfloat matrix_player_left[4][4], matrix_player_right[4][4];
     GLfloat matrix_ball[4][4], matrix_powerup[4][4];
     GLboolean observer_position;
+    GLint ball_type;
+    GLboolean box_close;
     struct observer obs_begin;
     struct observer obs_end;
 

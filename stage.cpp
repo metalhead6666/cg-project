@@ -2,14 +2,12 @@
 
 Stage *s_stage;
 
+
 Stage::Stage(){
     srand(time(NULL));
     this->init();
 }
 
-Stage::~Stage(){
-
-}
 
 GLvoid Stage::init(){
     this->wScreen = 1280;
@@ -20,11 +18,11 @@ GLvoid Stage::init(){
     this->width = 10.0;
     this->height = 2.0;
     this->length = 5.0;
-
+    
     this->board_width = 8.0;
     this->board_length = 4.0;
     this->board_height = 1.0;
-
+    
     this->racket_width = 0.05;
     this->racket_length_left = 1.0;
     this->racket_length_right = 1.0;
@@ -41,7 +39,7 @@ GLvoid Stage::init(){
     this->observer_position = true;
     this->timer_value = 3;
 #endif
-
+    
     this->actual_speed_x = 0.03;
     this->actual_speed_z = 0.03;
     this->ball_pos_x = 0.0;
@@ -90,14 +88,21 @@ GLvoid Stage::init(){
 
     this->exit_game = false;
 
+    this->ball_type = 0;
+    this->box_close = false;
+
     s_stage = this;
+}
+
+Stage::~Stage(){
+
 }
 
 GLvoid Stage::start_stage(){
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(this->wScreen, this->hScreen);
     glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - this->wScreen) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - this->hScreen) / 2);
-    glutCreateWindow("Crappy name "); /* TODO: change this name */
+    glutCreateWindow("Awesome Pong 3D "); /* TODO: change this name */
 
     glClearColor(BLACK);
     this->loadTextures();
@@ -107,6 +112,7 @@ GLvoid Stage::start_stage(){
     glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 GLvoid Stage::display(){
@@ -175,7 +181,20 @@ GLvoid Stage::display(){
 
     this->draw_world();
     this->draw_board();
-    this->draw_character();
+
+    if(ball_type==1){
+        glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+        this->draw_character();
+        glDisable(GL_BLEND);
+        glDepthMask(GL_TRUE);
+    }
+    else{
+        this->draw_character();
+    }
+
+
 
     if(this->can_create_powerup){
         this->draw_powerup();
@@ -187,6 +206,10 @@ GLvoid Stage::display(){
 
 GLvoid Stage::draw_world(){
     glEnable(GL_CULL_FACE);
+    if(this->pause_game && this->box_close){
+        glDisable(GL_CULL_FACE);
+    }
+
     glPushMatrix();
         //glColor4d(WHITE);
         glEnable(GL_TEXTURE_2D);
@@ -226,9 +249,27 @@ GLvoid Stage::draw_world(){
         glPopMatrix();
         glDisable(GL_TEXTURE_2D);
 
+        draw_wall(1);
+        if(this->pause_game){
+            draw_wall(2);
+        }
+        draw_wall(3);
+        draw_wall(4);
+    glPopMatrix();
+}
+
+GLvoid Stage::draw_wall(GLint type){
+    glEnable(GL_CULL_FACE);
+    if(this->pause_game && this->box_close){
+        glDisable(GL_CULL_FACE);
+    }
+    glPushMatrix();
+    if(type==1){
         glCullFace(GL_FRONT);
         glPushMatrix();
-            glColor4d(BROWN);
+            //glColor4d(BROWN);
+            glEnable(GL_BLEND);
+            glColor4d(1.0,1.0,1.0,0.7);
             glBegin(GL_QUADS);
                 //Left
                 glVertex3d(-width, 0.0, -length);
@@ -236,11 +277,16 @@ GLvoid Stage::draw_world(){
                 glVertex3d(-width, height, length);
                 glVertex3d(-width, height, -length);
             glEnd();
+            glDisable(GL_BLEND);
         glPopMatrix();
+    }
+    glPopMatrix();
 
+    glPushMatrix();
+    if(type==2){
         glCullFace(GL_BACK);
         glPushMatrix();
-            glColor4d(GREEN);
+            glColor4d(1.0,1.0,1.0,0.7);
             glBegin(GL_QUADS);
                 //Right
                 glVertex3d(width, 0.0, -length);
@@ -249,7 +295,12 @@ GLvoid Stage::draw_world(){
                 glVertex3d(width, height, -length);
             glEnd();
         glPopMatrix();
+    }
+    glPopMatrix();
 
+    glPushMatrix();
+    if(type==3){
+        glCullFace(GL_BACK);
         glPushMatrix();
             glColor4d(ORANGE);
             glBegin(GL_QUADS);
@@ -260,10 +311,14 @@ GLvoid Stage::draw_world(){
                 glVertex3d(width, 0.0, length);
             glEnd();
         glPopMatrix();
+    }
+    glPopMatrix();
 
+    glPushMatrix();
+    if(type==4){
         glCullFace(GL_FRONT);
         glPushMatrix();
-            glColor4d(RED);
+            //glColor4d(RED);
             glBegin(GL_QUADS);
                 //Back
                 glVertex3d(-width, 0.0, -length);
@@ -272,23 +327,24 @@ GLvoid Stage::draw_world(){
                 glVertex3d(width, 0.0, -length);
             glEnd();
         glPopMatrix();
+    }
     glPopMatrix();
 }
 
 GLvoid Stage::draw_board(){
     glPushMatrix();
         //glColor4d(BLUE);
+
         if(this->pause_game){
             glDisable(GL_CULL_FACE);
         }
-
         else{
            glEnable(GL_CULL_FACE);
         }
-
+        glCullFace(GL_FRONT);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture_floor);
-        glCullFace(GL_FRONT);
+
         glPushMatrix();
             glBegin(GL_QUADS);
                 //Bottom
@@ -319,6 +375,48 @@ GLvoid Stage::draw_board(){
 #endif
         glPopMatrix();
         glDisable(GL_TEXTURE_2D);
+
+        if(!this->pause_game){
+            //Reflexão1
+            glPushMatrix();
+            glEnable(GL_STENCIL_TEST);
+            glColorMask(0,0,0,0);
+            glDisable(GL_DEPTH_TEST);
+            glStencilFunc(GL_ALWAYS,1,1);
+            glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+            draw_wall(2);
+            glColorMask(1,1,1,1);
+            glEnable(GL_DEPTH_TEST);
+            glStencilFunc(GL_EQUAL,1,1);
+            glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+            glPushMatrix();
+                glTranslatef(2,0,0);
+                glScalef(-1,1,1);
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, texture_player[0]);
+                glPushMatrix();
+                    glTranslated(-board_width, 0.0, left_racket_move);
+                        glBegin(GL_QUADS);
+                            glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, -racket_length_right);
+                            glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 0.0, racket_length_right);
+                            glTexCoord2f(1.0, 1.0); glVertex3d(0.0, board_height, racket_length_right);
+                            glTexCoord2f(0.0, 1.0); glVertex3d(0.0, board_height, -racket_length_right);
+                        glEnd();
+                glPopMatrix();
+                glDisable(GL_TEXTURE_2D);
+            glPopMatrix();
+            glPushMatrix();
+                glTranslatef(9.5-matrix_ball[3][0],-0.25,0);
+                glScalef(-1,(9.5-matrix_ball[3][0])/10,(9.5-matrix_ball[3][0])/10);
+                draw_character();
+                glPopMatrix();
+            glDisable(GL_STENCIL_TEST);
+            glEnable(GL_BLEND);
+            glColor4f(1,1,1,0.7);
+            draw_wall(2);
+            glDisable(GL_BLEND);
+            glPopMatrix();
+        }
     
         //LEFT RACKET
         glEnable(GL_TEXTURE_2D);
@@ -354,7 +452,8 @@ GLvoid Stage::draw_board(){
             glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_top[0][0]);
         glPopMatrix();
         glDisable(GL_TEXTURE_2D);
-    
+
+
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture_wall);
         glCullFace(GL_FRONT);
@@ -377,7 +476,7 @@ GLvoid Stage::draw_character(){
     GLUquadricObj* s;
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture_ball[0]);
+    glBindTexture(GL_TEXTURE_2D, texture_ball[ball_type]);
     glPushMatrix();
         s = gluNewQuadric();
         gluQuadricDrawStyle(s, GLU_FILL);
@@ -402,7 +501,7 @@ GLvoid Stage::draw_powerup(){
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture_powerup);
     glPushMatrix();
-        //glColor4d(BLACK);
+        glColor4d(BLACK);
         s = gluNewQuadric();
         gluQuadricDrawStyle(s, GLU_FILL);
         gluQuadricNormals(s, GLU_SMOOTH);
@@ -603,7 +702,6 @@ GLvoid Stage::key_pressed(unsigned char key){
         if(!this->exit_game){
             this->pause_game = !this->pause_game;
         }
-
         break;
 
     case 'n':
@@ -622,14 +720,17 @@ GLvoid Stage::key_pressed(unsigned char key){
 
         break;
 
+    case 'c':
+    case 'C':
+        this->box_close=true;
+        break;
+
     case 27:
         exit(0);
 
     default:
         break;
     }
-
-    glutPostRedisplay();
 }
 
 GLvoid Stage::key_not_pressed(unsigned char key){
@@ -642,6 +743,16 @@ GLvoid Stage::key_not_pressed(unsigned char key){
     case 's':
     case 'S':
         this->back = false;
+        break;
+
+    case 'x':
+    case 'X':
+        this->ball_type = (this->ball_type+1)%3;
+        break;
+
+    case 'c':
+    case 'C':
+        this->box_close=false;
         break;
 
     default:
@@ -766,8 +877,8 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
 
     else{
         if(this->player_one_points == MAX_SCORE || this->player_two_points == MAX_SCORE){
-            this->exit_game = true;
-            glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
+           this->exit_game = true;
+           glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
         }
 
         this->tempRotateX = this->tempRotateY = this->tempRotateZ = 0.0;
@@ -872,7 +983,6 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
                         this->player_powerup = PLAYER_LEFT;
                         this->racket_length_left += 0.2;
                     }
-
                     break;
 
                 case RACKET_FRAGILE:
@@ -920,17 +1030,15 @@ GLvoid Stage::Timer_powerups(GLint value){
     else{
         if(this->powerup_type == -1){
             random_value = this->randomIntGenerator(0, 39);
-            random_value = 1;
+            //random_value = 0;
 
             if(random_value < 6){
                 this->powerup_type = random_value;
-                this->can_create_powerup = true;
                 glutPostRedisplay();
                 glutTimerFunc(5000, &Stage::static_timer_powerups, value);
             }
 
             else{
-                this->can_create_powerup = false;
                 glutTimerFunc(1000, &Stage::static_timer_powerups, value);
             }
         }
@@ -956,7 +1064,6 @@ GLvoid Stage::Timer_powerups(GLint value){
                 else if(this->player_powerup == PLAYER_LEFT){
                     this->racket_length_left -= 0.2;
                 }
-
                 break;
 
             case RACKET_FRAGILE:
@@ -966,7 +1073,6 @@ GLvoid Stage::Timer_powerups(GLint value){
                 if(this->player_powerup != NO_PLAYER){
                     this->ball_speed_x -= 0.05;
                 }
-
                 break;
 
             case BALL_FRAGILE:
