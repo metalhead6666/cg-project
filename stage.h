@@ -95,6 +95,12 @@ private:
     GLuint texture_wall, texture_floor, texture_environment;
     GLuint tex;
     RgbImage imag;
+
+    /* ball rotate */
+    GLdouble ballRotate;
+
+    /* rotate world */
+    GLdouble tempRotateX, tempRotateY, tempRotateZ;
 };
 
 #endif // STAGE_H

@@ -26,8 +26,8 @@ Stage::Stage(){
     /* mexer aqui caralho true/start screen ou false/jogo em si*/
     this->observer_position = false;
     
-    this->actual_speed_x = 0.1;
-    this->actual_speed_z = 0.1;
+    this->actual_speed_x = 0.03;
+    this->actual_speed_z = 0.03;
     this->ball_pos_x = 0.0;
     this->ball_pos_z = 0.0;
     this->ball_speed_x = actual_speed_x;
@@ -58,6 +58,12 @@ Stage::Stage(){
     this->timer_value = -1;
     this->player_one_points = 0;
     this->player_two_points = 0;
+
+    this->ballRotate = 0.0;
+
+    this->tempRotateX = 0.0;
+    this->tempRotateY = 0.0;
+    this->tempRotateZ = 0.0;
 
     srand(time(NULL));
     s_stage = this;
@@ -120,9 +126,17 @@ GLvoid Stage::display(){
         gluLookAt(this->obs_begin.x, this->obs_begin.y, this->obs_begin.z, this->obs_end.x, this->obs_end.y, this->obs_end.z, 0.0, 0.0, 1.0);
     }
 
+    glPushMatrix();
+    if(this->pause_game){
+        glRotated(tempRotateX, 1.0, 0.0, 0.0);
+        glRotated(tempRotateY, 0.0, 1.0, 0.0);
+        glRotated(tempRotateZ, 0.0, 0.0, 1.0);
+    }
+
     this->draw_world();
     this->draw_board();
     this->draw_character();
+    glPopMatrix();
 
     if(this->pause_game){
         aux = (char *)calloc(1, sizeof(char) * 2);
@@ -317,7 +331,10 @@ GLvoid Stage::draw_character(){
         gluQuadricDrawStyle(s, GLU_FILL);
         gluQuadricNormals(s, GLU_SMOOTH);
         gluQuadricTexture(s, GL_TRUE);
-        glTranslatef(ball_pos_x, ball_going_down, ball_pos_z);
+        glTranslated(ball_pos_x, ball_going_down, ball_pos_z);
+        ballRotate += 2;
+        glRotated(ballRotate, 0.0, 1.0, 0.0);
+        //glTranslated(-ball_pos_x, -ball_going_down, -ball_pos_z);
         gluSphere(s, 0.25, 25, 25);
         //glutSolidSphere(0.25,25,25);
         gluDeleteQuadric(s);
@@ -560,6 +577,10 @@ GLvoid Stage::writePoints(){
 
 GLvoid Stage::Timer_ball_going_down(GLint value){
     if(this->pause_game){
+        ++this->tempRotateX;
+        ++this->tempRotateY;
+        ++this->tempRotateZ;
+        glutPostRedisplay();
         glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
     }
 
