@@ -18,7 +18,7 @@
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
 #define DEBUG_POWERUP_TOUCH
-//#define GOD_MODE
+#define GOD_MODE
 
 /* colors */
 #define BLUE			 0.0, 0.0, 1.0, 1.0
@@ -90,7 +90,7 @@ private:
     GLdouble fov, aspect, near_p, far_p;
     GLdouble width, height, length;
     GLdouble board_width, board_length, board_height;
-    GLdouble racket_width, racket_length, racket_height;
+    GLdouble racket_width, racket_length_left, racket_length_right, racket_height;
     GLdouble left_racket_move, right_racket_move;
     GLdouble ball_going_down;
     GLdouble actual_speed_x, actual_speed_z;
@@ -127,6 +127,7 @@ private:
     /* powerup type */
     GLint powerup_type;
     GLint player_powerup;
+    GLboolean can_create_powerup;
     GLdouble powerup_x, powerup_z;
 };
 
