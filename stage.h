@@ -17,7 +17,8 @@
 //#define DEBUG_SPHERE
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
-//#define GOD_MODE
+#define DEBUG_POWERUP_TOUCH
+#define GOD_MODE
 
 /* colors */
 #define BLUE			 0.0, 0.0, 1.0, 1.0
@@ -37,6 +38,18 @@ struct observer{
     GLdouble x, y, z;
 };
 
+enum{
+    RACKET_FASTER = 0,
+    RACKET_LARGER = 1,
+    RACKET_FRAGILE = 2,
+    BALL_FASTER = 3,
+    BALL_FRAGILE = 4,
+    ONE_MORE_BALL = 5,
+    NO_PLAYER = 0,
+    PLAYER_LEFT = 1,
+    PLAYER_RIGHT = 2
+};
+
 class Stage{
 public:
     /* constructor */
@@ -53,17 +66,21 @@ public:
     GLvoid special_key_not_pressed(GLint key);
     GLvoid Timer_ball_going_down(GLint value);
     static void static_timer_ball_going_down(GLint value);
+    GLvoid Timer_powerups(GLint value);
+    static void static_timer_powerups(GLint value);
 
 private:
     /* functions */
-    GLvoid draw_world();
-    GLvoid draw_character();
-    GLvoid keyboard();
+    GLvoid draw_world();    
     GLvoid draw_board();
+    GLvoid draw_character();
+    GLvoid draw_powerup();
+    GLvoid keyboard();
     GLvoid writeText(char *text, GLdouble posX, GLdouble posY);
     GLvoid writePoints();
     GLvoid loadTextures();
     GLdouble randomGenerator(GLdouble min, GLdouble max);
+    GLint randomIntGenerator(GLint min, GLint max);
 
     /* variables */
     GLsizei wScreen, hScreen;
@@ -80,7 +97,7 @@ private:
     GLdouble ball_speed_x, ball_speed_z, ball_pos_x, ball_pos_z;
     GLfloat matrix_top[4][4], matrix_bottom[4][4];    
     GLfloat matrix_player_left[4][4], matrix_player_right[4][4];
-    GLfloat matrix_ball[4][4];
+    GLfloat matrix_ball[4][4], matrix_powerup[4][4];
     GLboolean observer_position;
     struct observer obs_begin;
     struct observer obs_end;
@@ -98,13 +115,18 @@ private:
     RgbImage imag;
 
     /* racket speed */
-    GLdouble racket_speed;
+    GLdouble racket_speed_left, racket_speed_right;
 
     /* ball rotate */
     GLdouble ballRotate;
 
     /* rotate world */
     GLdouble tempRotateX, tempRotateY, tempRotateZ;
+
+    /* powerup type */
+    GLint powerup_type;
+    GLint player_powerup;
+    GLdouble powerup_x, powerup_z;
 };
 
 #endif // STAGE_H
