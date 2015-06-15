@@ -17,6 +17,7 @@
 //#define DEBUG_SPHERE
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
+//#define GOD_MODE
 
 /* colors */
 #define BLUE			 0.0, 0.0, 1.0, 1.0
@@ -95,6 +96,9 @@ private:
     GLuint texture_wall, texture_floor, texture_environment;
     GLuint tex;
     RgbImage imag;
+
+    /* racket speed */
+    GLdouble racket_speed;
 
     /* ball rotate */
     GLdouble ballRotate;

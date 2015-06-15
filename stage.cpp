@@ -21,10 +21,16 @@ Stage::Stage(){
     this->racket_height = 0.5;
     this->left_racket_move = 0.0;
     this->right_racket_move = 0.0;
-    /* mexer aqui caralho, 0.75/false ou 1.75/true */
+
+#ifdef GOD_MODE
     this->ball_going_down = 0.75;
-    /* mexer aqui caralho true/start screen ou false/jogo em si*/
     this->observer_position = false;
+    this->timer_value = -1;
+#else
+    this->ball_going_down = 1.75;
+    this->observer_position = true;
+    this->timer_value = 3;
+#endif
     
     this->actual_speed_x = 0.03;
     this->actual_speed_z = 0.03;
@@ -54,10 +60,10 @@ Stage::Stage(){
     this->left = false;
     this->right = false;
 
-    /* mexer aqui caralho, 3/true ou -1/false */
-    this->timer_value = -1;
     this->player_one_points = 0;
     this->player_two_points = 0;
+
+    this->racket_speed = 0.3;
 
     this->ballRotate = 0.0;
 
@@ -436,25 +442,25 @@ GLvoid Stage::loadTextures(){
 GLvoid Stage::keyboard(){
     if(this->front){
         if(left_racket_move < 2.75){
-            this->left_racket_move += 0.3;
+            this->left_racket_move += racket_speed;
         }
     }
 
     if(this->back){
         if(left_racket_move > -2.75){
-            this->left_racket_move -= 0.3;
+            this->left_racket_move -= racket_speed;
         }
     }
 
     if(this->down_arrow){
         if(right_racket_move > -2.75){
-            this->right_racket_move -= 0.3;
+            this->right_racket_move -= racket_speed;
         }
     }
 
     if(this->up_arrow){
         if(right_racket_move < 2.75){
-            this->right_racket_move += 0.3;
+            this->right_racket_move += racket_speed;
         }
     }
 
@@ -585,6 +591,8 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
     }
 
     else{
+        this->tempRotateX = this->tempRotateY = this->tempRotateZ = 0.0;
+
         if(observer_position){
             timer_value = value;
 
