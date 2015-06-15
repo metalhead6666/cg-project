@@ -169,6 +169,7 @@ GLvoid Stage::display(){
 }
 
 GLvoid Stage::draw_world(){
+    glEnable(GL_CULL_FACE);
     glPushMatrix();
         //glColor4d(WHITE);
         glEnable(GL_TEXTURE_2D);
@@ -189,17 +190,24 @@ GLvoid Stage::draw_world(){
         glPopMatrix();
         glDisable(GL_TEXTURE_2D);
 
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_environment);
         glCullFace(GL_BACK);
         glPushMatrix();
-            glColor4d(BLUE);
+            //glColor4d(BLUE);
             glBegin(GL_QUADS);
                 //Up
+                glTexCoord2f(0.0f, 0.0f);
                 glVertex3d(-width, height, -length);
+                glTexCoord2f(1.0f, 0.0f);
                 glVertex3d(width, height, -length);
+                glTexCoord2f(1.0f, 1.0f);
                 glVertex3d(width, height, length);
+                glTexCoord2f(0.0f, 1.0f);
                 glVertex3d(-width, height, length);
             glEnd();
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
 
         glCullFace(GL_FRONT);
         glPushMatrix();
@@ -253,9 +261,17 @@ GLvoid Stage::draw_world(){
 GLvoid Stage::draw_board(){
     glPushMatrix();
         //glColor4d(BLUE);
+
+        if(this->pause_game){
+            glDisable(GL_CULL_FACE);
+        }
+        else{
+           glEnable(GL_CULL_FACE);
+        }
+        glCullFace(GL_FRONT);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture_floor);
-        glCullFace(GL_FRONT);
+
         glPushMatrix();
             glBegin(GL_QUADS);
                 //Bottom
@@ -268,38 +284,44 @@ GLvoid Stage::draw_board(){
         glDisable(GL_TEXTURE_2D);
     
         //RIGHT RACKET
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_player[0]);
         glCullFace(GL_FRONT);
         glPushMatrix();
-            glColor4d(GREEN);
+            //glColor4d(GREEN);
             glTranslated(-board_width, 0.0, right_racket_move);
                 glBegin(GL_QUADS);
-                    glVertex3d(0.0, 0.0, -racket_length);
-                    glVertex3d(0.0, 0.0, racket_length);
-                    glVertex3d(0.0, board_height, racket_length);
-                    glVertex3d(0.0, board_height, -racket_length);
+                    glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, -racket_length);
+                    glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 0.0, racket_length);
+                    glTexCoord2f(1.0, 1.0); glVertex3d(0.0, board_height, racket_length);
+                    glTexCoord2f(0.0, 1.0); glVertex3d(0.0, board_height, -racket_length);
                 glEnd();
             glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_player_right[0][0]);
 #ifdef DEBUG_PLAYER_RIGHT
             printf("[PLAYER RIGHT] %f %f %f\n", matrix_player_right[3][0], matrix_player_right[3][1], matrix_player_right[3][2]);
 #endif
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
     
         //LEFT RACKET
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture_player[0]);
         glCullFace(GL_BACK);
         glPushMatrix();
-            glColor4d(BROWN);
+            //glColor4d(BROWN);
             glTranslated(board_width, 0.0, left_racket_move);
                 glBegin(GL_QUADS);
-                    glVertex3d(0.0, 0.0, -racket_length);
-                    glVertex3d(0.0, 0.0, racket_length);
-                    glVertex3d(0.0, board_height, racket_length);
-                    glVertex3d(0.0, board_height, -racket_length);
+                    glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, -racket_length);
+                    glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 0.0, racket_length);
+                    glTexCoord2f(1.0, 1.0); glVertex3d(0.0, board_height, racket_length);
+                    glTexCoord2f(0.0, 1.0); glVertex3d(0.0, board_height, -racket_length);
                 glEnd();
             glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_player_left[0][0]);
 #ifdef DEBUG_PLAYER_LEFT
             printf("[PLAYER LEFT] %f %f %f\n", matrix_player_left[3][0], matrix_player_left[3][1], matrix_player_left[3][2]);
 #endif
         glPopMatrix();
+        glDisable(GL_TEXTURE_2D);
 
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture_wall);
@@ -338,7 +360,7 @@ GLvoid Stage::draw_character(){
     GLUquadricObj* s;
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture_ball[0]);
+    glBindTexture(GL_TEXTURE_2D, texture_ball[2]);
     glPushMatrix();
         s = gluNewQuadric();
         gluQuadricDrawStyle(s, GLU_FILL);
@@ -360,8 +382,8 @@ GLvoid Stage::draw_character(){
 GLvoid Stage::draw_powerup(){
     GLUquadricObj* s;
 
-    //glEnable(GL_TEXTURE_2D);
-    //glBindTexture(GL_TEXTURE_2D, texture_ball[0]);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture_powerup);
     glPushMatrix();
         glColor4d(BLACK);
         s = gluNewQuadric();
@@ -380,7 +402,7 @@ GLvoid Stage::draw_powerup(){
         gluDeleteQuadric(s);
         glGetFloatv(GL_MODELVIEW_MATRIX, &matrix_powerup[0][0]);
     glPopMatrix();
-    //glDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_2D);
 }
 
 GLvoid Stage::loadTextures(){
@@ -411,6 +433,17 @@ GLvoid Stage::loadTextures(){
                  imag.ImageData());
 
     //Rock
+    glGenTextures(1, &texture_ball[2]);
+    glBindTexture(GL_TEXTURE_2D, texture_ball[2]);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Ball/ball2.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
 
     //*********FLOOR*********
     glGenTextures(1, &texture_floor);
@@ -438,10 +471,24 @@ GLvoid Stage::loadTextures(){
                  imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
                  imag.ImageData());
 
-    //*********PLAYER_LEFT*********
+    //*********PLAYERS*********
 
-    glGenTextures(1, &texture_left_player[0]);
-    glBindTexture(GL_TEXTURE_2D, texture_left_player[0]);
+    //Wood
+    glGenTextures(1, &texture_player[0]);
+    glBindTexture(GL_TEXTURE_2D, texture_player[0]);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Player/player0.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+
+    //Glass
+    glGenTextures(1, &texture_player[1]);
+    glBindTexture(GL_TEXTURE_2D, texture_player[1]);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -452,7 +499,18 @@ GLvoid Stage::loadTextures(){
                  imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
                  imag.ImageData());
 
-    //*********PLAYER_RIGHT*********
+    //Rock
+    glGenTextures(1, &texture_player[2]);
+    glBindTexture(GL_TEXTURE_2D, texture_player[2]);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Player/player2.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
 
 
     //*********ENVIRONMENT*********
@@ -465,6 +523,19 @@ GLvoid Stage::loadTextures(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     imag.LoadBmpFile("ProjectTextures/Environment/environment.bmp");
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
+                 imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 imag.ImageData());
+
+    //*********POWERUP*********
+    glGenTextures(1, &texture_powerup);
+    glBindTexture(GL_TEXTURE_2D, texture_powerup);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    imag.LoadBmpFile("ProjectTextures/Powerup/powerup.bmp");
     glTexImage2D(GL_TEXTURE_2D, 0, 3, imag.GetNumCols(),
                  imag.GetNumRows(), 0, GL_RGB, GL_UNSIGNED_BYTE,
                  imag.ImageData());

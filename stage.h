@@ -18,7 +18,7 @@
 //#define DEBUG_PLAYER_LEFT
 //#define DEBUG_PLAYER_RIGHT
 #define DEBUG_POWERUP_TOUCH
-#define GOD_MODE
+//#define GOD_MODE
 
 /* colors */
 #define BLUE			 0.0, 0.0, 1.0, 1.0
@@ -108,10 +108,11 @@ private:
     GLboolean front, back, left, right, up_arrow, down_arrow;
 
     /*Textures variables*/
-    GLuint texture_left_player[3], texture_right_player[3];
+    GLuint texture_player[3];
     GLuint texture_ball[3];
     GLuint texture_wall, texture_floor, texture_environment;
     GLuint tex;
+    GLuint texture_powerup;
     RgbImage imag;
 
     /* racket speed */
