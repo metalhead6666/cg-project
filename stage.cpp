@@ -40,8 +40,8 @@ GLvoid Stage::init(){
     this->timer_value = 3;
 #endif
     
-    this->actual_speed_x = 0.03;
-    this->actual_speed_z = 0.03;
+    this->actual_speed_x = 0.1;
+    this->actual_speed_z = 0.1;
     this->ball_pos_x = 0.0;
     this->ball_pos_z = 0.0;
     this->ball_speed_x = actual_speed_x;
@@ -102,7 +102,7 @@ GLvoid Stage::start_stage(){
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(this->wScreen, this->hScreen);
     glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - this->wScreen) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - this->hScreen) / 2);
-    glutCreateWindow("Awesome Pong 3D "); /* TODO: change this name */
+    glutCreateWindow("Awesome Pong 3D ");
 
     glClearColor(BLACK);
     this->loadTextures();
@@ -133,7 +133,7 @@ GLvoid Stage::display(){
     else{
         aux = (char *)calloc(1, sizeof(char) * 2);
         sprintf(aux, "%d", timer_value);
-        writeText(aux, 2.0, 1.5);
+        writeText(aux, -9.0, 1.5);
         free(aux);
     }
 
@@ -193,8 +193,6 @@ GLvoid Stage::display(){
     else{
         this->draw_character();
     }
-
-
 
     if(this->can_create_powerup){
         this->draw_powerup();
@@ -397,10 +395,10 @@ GLvoid Stage::draw_board(){
                 glPushMatrix();
                     glTranslated(-board_width, 0.0, left_racket_move);
                         glBegin(GL_QUADS);
-                            glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, -racket_length_right);
-                            glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 0.0, racket_length_right);
-                            glTexCoord2f(1.0, 1.0); glVertex3d(0.0, board_height, racket_length_right);
-                            glTexCoord2f(0.0, 1.0); glVertex3d(0.0, board_height, -racket_length_right);
+                            glTexCoord2f(0.0, 0.0); glVertex3d(0.0, 0.0, -racket_length_left);
+                            glTexCoord2f(1.0, 0.0); glVertex3d(0.0, 0.0, racket_length_left);
+                            glTexCoord2f(1.0, 1.0); glVertex3d(0.0, board_height, racket_length_left);
+                            glTexCoord2f(0.0, 1.0); glVertex3d(0.0, board_height, -racket_length_left);
                         glEnd();
                 glPopMatrix();
                 glDisable(GL_TEXTURE_2D);
@@ -704,22 +702,6 @@ GLvoid Stage::key_pressed(unsigned char key){
         }
         break;
 
-    case 'n':
-    case 'N':
-        if(this->exit_game){
-            exit(0);
-        }
-
-        break;
-
-    case 'y':
-    case 'Y':
-        if(this->exit_game){
-            this->init();
-        }
-
-        break;
-
     case 'c':
     case 'C':
         this->box_close=true;
@@ -793,7 +775,7 @@ GLvoid Stage::special_key_not_pressed(GLint key){
 GLvoid Stage::writeText(char *text, GLdouble posX, GLdouble posY){
     const char *c;
 
-    glColor4d(PINK);
+    glColor4d(RED);
     glPushMatrix();
         glRasterPos2d(posX, posY);
 
@@ -807,9 +789,9 @@ GLvoid Stage::writeEnd(){
     const char *c;
     char *text;
 
-    text = (char *)calloc(1, sizeof(char) * 17);
+    text = (char *)calloc(1, sizeof(char) * 20);
 
-    glColor4d(PINK);
+    glColor4d(RED);
     glPushMatrix();
         glRasterPos2d(1.0, 1.0);
 
@@ -825,7 +807,7 @@ GLvoid Stage::writeEnd(){
             glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
         }
 
-        strcpy(text, "Continue? (y/n)");
+        strcpy(text, "Press Esc to exit!");
         glTranslated(0.0, 0.0, -0.5);
         glRasterPos2d(1.0, 1.0);
 
@@ -985,20 +967,6 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
                     }
                     break;
 
-                case RACKET_FRAGILE:
-                    break;
-
-                case BALL_FASTER:
-                    this->ball_speed_x += 0.05;
-                    this->player_powerup = PLAYER_RIGHT;
-                    break;
-
-                case BALL_FRAGILE:
-                    break;
-
-                case ONE_MORE_BALL:
-                    break;
-
                 default:
                     break;
                 }
@@ -1029,11 +997,11 @@ GLvoid Stage::Timer_powerups(GLint value){
 
     else{
         if(this->powerup_type == -1){
-            random_value = this->randomIntGenerator(0, 39);
-            //random_value = 0;
+            random_value = this->randomIntGenerator(0, 2);
 
-            if(random_value < 6){
+            if(random_value < 2){
                 this->powerup_type = random_value;
+                this->can_create_powerup = true;
                 glutPostRedisplay();
                 glutTimerFunc(5000, &Stage::static_timer_powerups, value);
             }
@@ -1064,21 +1032,7 @@ GLvoid Stage::Timer_powerups(GLint value){
                 else if(this->player_powerup == PLAYER_LEFT){
                     this->racket_length_left -= 0.2;
                 }
-                break;
 
-            case RACKET_FRAGILE:
-                break;
-
-            case BALL_FASTER:
-                if(this->player_powerup != NO_PLAYER){
-                    this->ball_speed_x -= 0.05;
-                }
-                break;
-
-            case BALL_FRAGILE:
-                break;
-
-            case ONE_MORE_BALL:
                 break;
 
             default:

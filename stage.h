@@ -43,10 +43,6 @@ struct observer{
 enum{
     RACKET_FASTER = 0,
     RACKET_LARGER = 1,
-    RACKET_FRAGILE = 2,
-    BALL_FASTER = 3,
-    BALL_FRAGILE = 4,
-    ONE_MORE_BALL = 5,
     NO_PLAYER = 0,
     PLAYER_LEFT = 1,
     PLAYER_RIGHT = 2
