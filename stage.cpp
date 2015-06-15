@@ -3,6 +3,15 @@
 Stage *s_stage;
 
 Stage::Stage(){
+    srand(time(NULL));
+    this->init();
+}
+
+Stage::~Stage(){
+
+}
+
+GLvoid Stage::init(){
     this->wScreen = 1280;
     this->hScreen = 720;
 
@@ -11,11 +20,11 @@ Stage::Stage(){
     this->width = 10.0;
     this->height = 2.0;
     this->length = 5.0;
-    
+
     this->board_width = 8.0;
     this->board_length = 4.0;
     this->board_height = 1.0;
-    
+
     this->racket_width = 0.05;
     this->racket_length_left = 1.0;
     this->racket_length_right = 1.0;
@@ -32,7 +41,7 @@ Stage::Stage(){
     this->observer_position = true;
     this->timer_value = 3;
 #endif
-    
+
     this->actual_speed_x = 0.03;
     this->actual_speed_z = 0.03;
     this->ball_pos_x = 0.0;
@@ -79,12 +88,9 @@ Stage::Stage(){
     this->powerup_x = -10.0;
     this->powerup_z = -10.0;
 
-    srand(time(NULL));
+    this->exit_game = false;
+
     s_stage = this;
-}
-
-Stage::~Stage(){
-
 }
 
 GLvoid Stage::start_stage(){
@@ -141,7 +147,16 @@ GLvoid Stage::display(){
     }
 
     glPushMatrix();
-    if(this->pause_game){
+
+    if(this->exit_game){
+        writeEnd();
+
+        glRotated(tempRotateX, 1.0, 0.0, 0.0);
+        glRotated(tempRotateY, 0.0, 1.0, 0.0);
+        glRotated(tempRotateZ, 0.0, 0.0, 1.0);
+    }
+
+    else if(this->pause_game){
         aux = (char *)calloc(1, sizeof(char) * 2);
         strcpy(aux, "PAUSED");
         writeText(aux, 1.0, 1.0);
@@ -585,7 +600,26 @@ GLvoid Stage::key_pressed(unsigned char key){
 
     case 'p':
     case 'P':
-        this->pause_game = !this->pause_game;
+        if(!this->exit_game){
+            this->pause_game = !this->pause_game;
+        }
+
+        break;
+
+    case 'n':
+    case 'N':
+        if(this->exit_game){
+            exit(0);
+        }
+
+        break;
+
+    case 'y':
+    case 'Y':
+        if(this->exit_game){
+            this->init();
+        }
+
         break;
 
     case 27:
@@ -594,6 +628,8 @@ GLvoid Stage::key_pressed(unsigned char key){
     default:
         break;
     }
+
+    glutPostRedisplay();
 }
 
 GLvoid Stage::key_not_pressed(unsigned char key){
@@ -656,6 +692,40 @@ GLvoid Stage::writeText(char *text, GLdouble posX, GLdouble posY){
     glPopMatrix();
 }
 
+GLvoid Stage::writeEnd(){
+    const char *c;
+    char *text;
+
+    text = (char *)calloc(1, sizeof(char) * 17);
+
+    glColor4d(PINK);
+    glPushMatrix();
+        glRasterPos2d(1.0, 1.0);
+
+        if(this->player_one_points == MAX_SCORE){
+            strcpy(text, "Player One Wins!");
+        }
+
+        else{
+            strcpy(text, "Player Two Wins!");
+        }
+
+        for(c = text; *c != '\0'; ++c){
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+        }
+
+        strcpy(text, "Continue? (y/n)");
+        glTranslated(0.0, 0.0, -0.5);
+        glRasterPos2d(1.0, 1.0);
+
+        for(c = text; *c != '\0'; ++c){
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
+        }
+    glPopMatrix();
+
+    free(text);
+}
+
 GLvoid Stage::writePoints(){
     const char *c;
     char *one, *two;
@@ -686,7 +756,7 @@ GLvoid Stage::writePoints(){
 }
 
 GLvoid Stage::Timer_ball_going_down(GLint value){
-    if(this->pause_game){
+    if(this->pause_game || this->exit_game){
         ++this->tempRotateX;
         ++this->tempRotateY;
         ++this->tempRotateZ;
@@ -695,6 +765,11 @@ GLvoid Stage::Timer_ball_going_down(GLint value){
     }
 
     else{
+        if(this->player_one_points == MAX_SCORE || this->player_two_points == MAX_SCORE){
+            this->exit_game = true;
+            glutTimerFunc(10, &Stage::static_timer_ball_going_down, value);
+        }
+
         this->tempRotateX = this->tempRotateY = this->tempRotateZ = 0.0;
 
         if(observer_position){
@@ -838,7 +913,7 @@ void Stage::static_timer_ball_going_down(GLint value){
 GLvoid Stage::Timer_powerups(GLint value){
     GLint random_value;
 
-    if(this->pause_game){
+    if(this->pause_game || this->exit_game){
         glutTimerFunc(1000, &Stage::static_timer_powerups, value);
     }
 

@@ -34,6 +34,8 @@
 /* math values */
 #define PI 3.141529
 
+#define MAX_SCORE 1
+
 struct observer{
     GLdouble x, y, z;
 };
@@ -71,6 +73,7 @@ public:
 
 private:
     /* functions */
+    GLvoid init();
     GLvoid draw_world();    
     GLvoid draw_board();
     GLvoid draw_character();
@@ -78,6 +81,7 @@ private:
     GLvoid keyboard();
     GLvoid writeText(char *text, GLdouble posX, GLdouble posY);
     GLvoid writePoints();
+    GLvoid writeEnd();
     GLvoid loadTextures();
     GLdouble randomGenerator(GLdouble min, GLdouble max);
     GLint randomIntGenerator(GLint min, GLint max);
@@ -129,6 +133,9 @@ private:
     GLint player_powerup;
     GLboolean can_create_powerup;
     GLdouble powerup_x, powerup_z;
+
+    /* end game */
+    GLboolean exit_game;
 };
 
 #endif // STAGE_H
